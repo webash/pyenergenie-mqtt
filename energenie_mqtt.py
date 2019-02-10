@@ -112,7 +112,7 @@ def rx_energenie(address, message):
 			print("rx_energenie: checking if message from " + str(d))
 			#print( str(dir(d)) )
 			if address[2] == d.get_device_id():
-				print( str(d.get_last_receive_time()) )
+				#print( str(d.get_last_receive_time()) )
 				if address[1] == PRODUCTID_MIHO006:
 					try:
 						p = d.get_apparent_power()
