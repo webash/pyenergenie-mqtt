@@ -8,6 +8,7 @@ import energenie
 import paho.mqtt.client as mqtt
 import Queue
 import threading
+import json
 
 mqtt_hostname = "localhost"
 mqtt_port = 1883
@@ -23,6 +24,7 @@ txq = Queue.Queue()
 rxq = Queue.Queue()
 
 def mqtt_tx_energenie():
+	global txq
 
 	while True:
 		try:
@@ -46,12 +48,14 @@ def mqtt_tx_energenie():
 			txq.task_done()
 			
 def rx_energenie():
+	global rxq
+
 	while True:
 		energenie.loop()
 		
 		for d in energenie.registry.devices():
 			print(d)
-			print( str(d.get_product_id()) )
+			print( json.dumps(d) )
 			if d.get_product_id() == "PRODUCTID_MIHO006":
 				try:
 					p = d.get_power()
@@ -80,6 +84,7 @@ def energenie_tx_mqtt():
 	global mqtt_client_id
 	global mqtt_clean_session
 	global mqtt_publish_topic
+	global rxq
 
 	print("energenie_tx_mqtt: creating mqtt.client...")
 	toMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
@@ -91,8 +96,10 @@ def energenie_tx_mqtt():
 	toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
 	
 	while True:
+		print("energenie_tx_mqtt: awaiting item in rxq...")
 		item = rxq.get()
 		print("energenie_tx_mqtt: item for" + item['DeviceName'] + " found on queue...")
+		print(str(item))
 		data = item['data']
 		for metric, value in data:
 			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
