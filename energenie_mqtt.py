@@ -57,7 +57,7 @@ def rx_energenie():
 					p = d.get_power()
 					print("Power MIHO005: %s" % str(p))
 					item = {'DeviceName': "powerfeed", 'data': {"power": str(p)}}
-					txq.put(item)
+					rxq.put(item)
 				except:
 					print("Exception getting power")
 			elif d.get_product_id() == "PRODUCTID_MIHO005":
@@ -65,7 +65,7 @@ def rx_energenie():
 					p = d.get_power()
 					print("Power MIHO005: %s" % str(p))
 					item = {'DeviceName': "washingmachine", 'data': {"power": str(p)}}
-					txq.put(item)
+					rxq.put(item)
 				except:
 					print("Exception getting power")
 
