@@ -141,18 +141,20 @@ def rx_energenie_process():
 			try:
 				p = d.get_apparent_power()
 				print("Power MIHO006: %s" % str(p))
-				item = {'DeviceName': "powerfeed", 'data': {"apparent_power": str(p)}}
+				item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"apparent_power": str(p)}}
 				q_tx_mqtt.put(item)
-			except:
+			except Exception as e:
 				print("rx_energenie_process: Exception getting power")
+				print(e)
 		elif refreshed_device['DeviceType'] == PRODUCTID_MIHO005:
 			try:
 				p = d.get_apparent_power()
 				print("Power MIHO005: %s" % str(p))
-				item = {'DeviceName': "washingmachine", 'data': {"apparent_power": str(p)}}
+				item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"apparent_power": str(p)}}
 				q_tx_mqtt.put(item)
-			except:
-				print("rx_energenie_process: Exception getting power")
+			except Exception as e:
+				print("rx_energenie_process: Exception getting power ")
+				print(e)
 		else:
 			print("rx_energenie_process: NOPE; No process defined for " + refreshed_device['DeviceName'] + " of type " + str(refreshed_device['DeviceType']))
 		q_rx_energenie.task_done()
