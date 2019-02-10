@@ -109,7 +109,7 @@ def rx_energenie(address, message):
 
 	if address[0] == MFRID_ENERGENIE:
 		for d in energenie.registry.devices():
-			print("rx_energenie: checking if message from " + d)
+			print("rx_energenie: checking if message from " + str(d))
 			#print( str(dir(d)) )
 			if address[2] == d.get_device_id():
 				print( str(d.get_last_receive_time()) )
