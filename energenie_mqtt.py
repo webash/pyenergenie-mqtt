@@ -194,10 +194,10 @@ def energenie_tx_mqtt():
 		print(str(item))
 		data = item['data']
 
-		for metric, value in data:
+		for metric in data.keys():
 			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
-			print("energenie_tx_mqtt: publishing " + str(value) + " to topic " + publish_topic)
-			toMqtt.publish(publish_topic, value)
+			print("energenie_tx_mqtt: publishing " + str( data[metric] ) + " to topic " + publish_topic)
+			toMqtt.publish(publish_topic, data[metric])
 		q_tx_mqtt.task_done()
 
 def main():
