@@ -204,7 +204,7 @@ def energenie_tx_mqtt():
 
 		for metric in data.keys():
 			value = data[metric]
-			if value:
+			if value == True:
 				value = 1
 			elif data[metric] = None:
 				value = ""
