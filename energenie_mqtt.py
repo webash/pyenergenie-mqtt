@@ -135,6 +135,7 @@ def rx_energenie_process():
 	while True:
 		print("rx_energenie_process: awaiting item in q_rx_energenie...")
 		refreshed_device = q_rx_energenie.get()
+		d = energenie.registry.get( refreshed_device['DeviceName'] )
 
 		print("rx_energenie_process: " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ") process beginning...")
 		if refreshed_device['DeviceType'] == PRODUCTID_MIHO006:
