@@ -51,7 +51,7 @@ def rx_energenie():
 		
 		for d in energenie.registry.devices():
 			print(d)
-			print(str(d.product_id())
+			print(str(d.product_id()))
 			if d.product_id() == "PRODUCTID_MIHO006":
 				try:
 					p = d.get_power()
