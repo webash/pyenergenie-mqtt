@@ -204,14 +204,14 @@ def energenie_tx_mqtt():
 
 		for metric in data.keys():
 			value = data[metric]
-			if value == True:
+			if value == True and type(value) == type(True):
 				value = 1
 			elif data[metric] == None:
 				value = ""
 
 			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
-			print("energenie_tx_mqtt: publishing " + str( value ) + " to topic " + publish_topic)
-			toMqtt.publish(publish_topic, data[metric])
+			print("energenie_tx_mqtt: publishing '" + str( value ) + "' to topic " + publish_topic)
+			toMqtt.publish(publish_topic, value)
 		q_tx_mqtt.task_done()
 
 def main():
