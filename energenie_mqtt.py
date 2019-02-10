@@ -8,7 +8,6 @@ import energenie
 import paho.mqtt.client as mqtt
 import Queue
 import threading
-import json
 
 mqtt_hostname = "localhost"
 mqtt_port = 1883
@@ -55,7 +54,7 @@ def rx_energenie():
 		
 		for d in energenie.registry.devices():
 			print(d)
-			print( json.dumps(d) )
+			print( str(dir(d)) )
 			if d.get_product_id() == "PRODUCTID_MIHO006":
 				try:
 					p = d.get_power()
