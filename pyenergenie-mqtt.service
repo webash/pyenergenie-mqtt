@@ -1,0 +1,13 @@
+# For: https://github.com/webash/pyenergenie-mqtt
+
+[Unit] 
+Description=Monitor energenie devices and share with an mqtt feed
+After=autossh-agn.target 
+
+
+[Service] 
+ExecStart=/usr/bin/python /shared/pyenergenie-mqtt/pyenergenie-mqtt.py
+Restart=always
+
+[Install] 
+WantedBy=multi-user.target
