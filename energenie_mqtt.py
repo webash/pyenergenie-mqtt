@@ -104,6 +104,8 @@ def mqtt_tx_energenie():
 		finally:
 			q_rx_mqtt.task_done()
 			
+
+
 def rx_energenie(address, message):
 	global q_rx_energenie
 
@@ -129,6 +131,7 @@ def rx_energenie(address, message):
 		print("Not an energenie device...?")
 
 
+
 def rx_energenie_process():
 	global q_rx_energenie
 
@@ -149,9 +152,10 @@ def rx_energenie_process():
 				print(e)
 		elif refreshed_device['DeviceType'] == PRODUCTID_MIHO005:
 			try:
-				p = d.get_apparent_power()
+				p = d.get_reactive_power()
+				v = d.get_voltage()
 				print("Power MIHO005: %s" % str(p))
-				item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"apparent_power": str(p)}}
+				item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"reactive_power": str(p), 'voltage': v}}
 				q_tx_mqtt.put(item)
 			except Exception as e:
 				print("rx_energenie_process: Exception getting power ")
