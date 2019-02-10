@@ -58,17 +58,17 @@ def rx_energenie():
 			#print( str(dir(d)) )
 			if d.get_product_id() == 0x05: #devices.PRODUCTID_MIHO006:
 				try:
-					p = d.get_power()
+					p = d.get_apparent_power()
 					print("Power MIHO006: %s" % str(p))
-					item = {'DeviceName': "powerfeed", 'data': {"power": str(p)}}
+					item = {'DeviceName': "powerfeed", 'data': {"apparent_power": str(p)}}
 					rxq.put(item)
 				except:
 					print("Exception getting power")
 			elif d.get_product_id() == 0x02: #devices.PRODUCTID_MIHO005:
 				try:
-					p = d.get_power()
+					p = d.get_apparent_power()
 					print("Power MIHO005: %s" % str(p))
-					item = {'DeviceName': "washingmachine", 'data': {"power": str(p)}}
+					item = {'DeviceName': "washingmachine", 'data': {"apparent_power": str(p)}}
 					rxq.put(item)
 				except:
 					print("Exception getting power")
