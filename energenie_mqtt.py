@@ -204,7 +204,7 @@ def energenie_tx_mqtt():
 
 		for metric in data.keys():
 			value = data[metric]
-			if value == "True":
+			if value:
 				value = 1
 
 			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
