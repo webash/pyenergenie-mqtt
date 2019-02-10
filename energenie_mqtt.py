@@ -91,14 +91,8 @@ def main():
 				print("Restarting...")
 
 
-<<<<<<< HEAD
 	def mqtt_tx_energenie():
 		global q_rx_mqtt
-=======
-	while True:
-		print("rx_energenie_process: awaiting item in q_rx_energenie...")
-		refreshed_device = q_rx_energenie.get()
->>>>>>> parent of bc34dd6... Forgot to grab the device object...
 
 		while True:
 			try:
