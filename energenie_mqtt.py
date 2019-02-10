@@ -136,7 +136,7 @@ def rx_energenie_process():
 		print("rx_energenie_process: awaiting item in q_rx_energenie...")
 		refreshed_device = q_rx_energenie.get()
 
-		print("rx_energenie_process: " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ") process beginning..."
+		print("rx_energenie_process: " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ") process beginning...")
 		if refreshed_device['DeviceType'] == PRODUCTID_MIHO006:
 			try:
 				p = d.get_apparent_power()
