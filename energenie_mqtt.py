@@ -20,6 +20,13 @@ mqtt_clean_session = True
 mqtt_publish_topic = "emon"
 mqtt_subscribe_topic = "energenie"
 
+# TODO: Figure out how not to have these copied from the other file
+MFRID_ENERGENIE                  = 0x04
+PRODUCTID_MIHO004                = 0x01   #         Monitor only
+PRODUCTID_MIHO005                = 0x02   #         Adaptor Plus
+PRODUCTID_MIHO006                = 0x05   #         House Monitor
+
+
 txq = Queue.Queue()
 rxq = Queue.Queue()
 
@@ -100,13 +107,13 @@ def rx_energenie(address, message):
 
 	print("rx_energenie: new message from " + str(address) )
 
-	if address[0] == Devices.MFRID_ENERGENIE:
+	if address[0] == MFRID_ENERGENIE:
 		for d in energenie.registry.devices():
 			print("rx_energenie: checking if message from " + d)
 			#print( str(dir(d)) )
 			if address[2] == d.get_device_id():
 				print( str(d.get_last_receive_time()) )
-				if address[1] == Devices.PRODUCTID_MIHO006:
+				if address[1] == PRODUCTID_MIHO006:
 					try:
 						p = d.get_apparent_power()
 						print("Power MIHO006: %s" % str(p))
@@ -114,7 +121,7 @@ def rx_energenie(address, message):
 						rxq.put(item)
 					except:
 						print("Exception getting power")
-				elif address[1] == Devices.PRODUCTID_MIHO005:
+				elif address[1] == PRODUCTID_MIHO005:
 					try:
 						p = d.get_apparent_power()
 						print("Power MIHO005: %s" % str(p))
