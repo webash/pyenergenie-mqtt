@@ -1,6 +1,7 @@
 # Based upon:
 # - https://github.com/jeremypoulter/pyenergenie/blob/master/src/switch.py
 # - https://github.com/whaleygeek/pyenergenie/blob/master/src/mihome_energy_monitor.py
+import sys
 import time
 sys.path.insert(0, '/shared/pyenergenie-master/src')
 import energenie
