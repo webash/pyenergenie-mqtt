@@ -51,12 +51,12 @@ def rx_energenie():
 		
 		for d in energenie.registry.devices():
 			print(d)
-			print(d.product_id())
+			print(str(d.product_id())
 			if d.product_id() == "PRODUCTID_MIHO006":
 				try:
 					p = d.get_power()
 					print("Power MIHO005: %s" % str(p))
-					item = {'DeviceName': "powerfeed", 'data': {"power": str(d.get_power())}}
+					item = {'DeviceName': "powerfeed", 'data': {"power": str(p)}}
 					txq.put(item)
 				except:
 					print("Exception getting power")
@@ -64,7 +64,7 @@ def rx_energenie():
 				try:
 					p = d.get_power()
 					print("Power MIHO005: %s" % str(p))
-					item = {'DeviceName': "washingmachine", 'data': {"power": str(d.get_power())}}
+					item = {'DeviceName': "washingmachine", 'data': {"power": str(p)}}
 					txq.put(item)
 				except:
 					print("Exception getting power")
@@ -117,8 +117,6 @@ def main():
 	global mqtt_password
 	global mqtt_client_id
 	global mqtt_clean_session
-	
-	energenie.init()
 
 	# Start a thread to process the key presses
 	#thread_txToEnergenie = threading.Thread(target=mqtt_tx_energenie)
@@ -154,4 +152,9 @@ def main():
 			print("Restarting...")
 
 if __name__ == "__main__":
-	main()
+	energenie.init()
+
+	try:
+		main()
+	finally:
+		energenie.finished()
