@@ -5,6 +5,7 @@ import sys
 import time
 sys.path.insert(0, '/shared/pyenergenie-master/src')
 import energenie
+import energenie.devices
 import paho.mqtt.client as mqtt
 import Queue
 import threading
@@ -58,7 +59,7 @@ def rx_energenie():
 			if d.get_product_id() == energenie.devices.PRODUCTID_MIHO006:
 				try:
 					p = d.get_power()
-					print("Power MIHO005: %s" % str(p))
+					print("Power MIHO006: %s" % str(p))
 					item = {'DeviceName': "powerfeed", 'data': {"power": str(p)}}
 					rxq.put(item)
 				except:
