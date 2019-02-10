@@ -81,17 +81,22 @@ def energenie_tx_mqtt():
 	global mqtt_clean_session
 	global mqtt_publish_topic
 
+	print("energenie_tx_mqtt: creating mqtt.client...")
 	toMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
 
 	if mqtt_username <> "":
+		print("energenie_tx_mqtt: using username and password...")
 		toMqtt.username_pw_set(mqtt_username, mqtt_password)
+	print("energenie_tx_mqtt: connecting to mqtt broker...")
 	toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
 	
 	while True:
 		item = rxq.get()
+		print("energenie_tx_mqtt: item for" + item['DeviceName'] + " found on queue...")
 		data = item['data']
 		for metric, value in data:
 			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
+			print("energenie_tx_mqtt: publishing " + str(value) + " to topic " + publish_topic)
 			toMqtt.publish(publish_topic, value)
 		rxq.task_done()
 
@@ -129,9 +134,9 @@ def main():
 	thread_rxFromEnergenie.start()
 	
 	# Start thread for processing received inbound energenie, then sending to mqtt
-	thread_rxProcesor = threading.Thread(target=energenie_tx_mqtt)
-	thread_rxProcesor.daemon = True
-	thread_rxProcesor.start()
+	thread_rxProcessor = threading.Thread(target=energenie_tx_mqtt)
+	thread_rxProcessor.daemon = True
+	thread_rxProcessor.start()
 	
 	while True:
 		try:
