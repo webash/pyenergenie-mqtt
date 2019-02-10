@@ -173,7 +173,7 @@ def main():
 	#thread_rxFromEnergenie = threading.Thread(target=rx_energenie)
 	#thread_rxFromEnergenie.daemon = True
 	#thread_rxFromEnergenie.start()
-	def 
+	energenie.fsk_router.when_incoming(rx_energenie)
 	
 	print("Starting rxProcessor thread...")
 	# Start thread for processing received inbound energenie, then sending to mqtt
