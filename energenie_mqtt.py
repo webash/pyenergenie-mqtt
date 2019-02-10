@@ -169,7 +169,7 @@ def rx_energenie_process():
 				value = getattr(d.readings, metric_name)
 				item['data'][metric_name] = value
 		q_tx_mqtt.put(item)
-		
+
 		q_rx_energenie.task_done()
 
 
@@ -203,8 +203,12 @@ def energenie_tx_mqtt():
 		data = item['data']
 
 		for metric in data.keys():
+			value = data[metric]
+			if value is True:
+				value = 1
+
 			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
-			print("energenie_tx_mqtt: publishing " + str( data[metric] ) + " to topic " + publish_topic)
+			print("energenie_tx_mqtt: publishing " + str( value ) + " to topic " + publish_topic)
 			toMqtt.publish(publish_topic, data[metric])
 		q_tx_mqtt.task_done()
 
