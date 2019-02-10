@@ -132,7 +132,7 @@ def rx_energenie(address, message):
 def rx_energenie_process():
 	global q_rx_energenie
 
-	while true:
+	while True:
 		print("rx_energenie_process: awaiting item in q_rx_energenie...")
 		refreshed_device = q_rx_energenie.get()
 
@@ -230,12 +230,14 @@ def main():
 	#thread_txToEnergenie.daemon = True
 	#thread_txToEnergenie.start()
 
+	print("These are devices in the registry...")
+	names = energenie.registry.names()
+	for name in names:
+		print(name)
+		device = energenie.registry.get(name)
+
 	while True:
 		energenie.loop()
-
-		names = energenie.registry.names()
-		for name in names:
-			device = energenie.registry.get(name)
 	
 
 if __name__ == "__main__":
