@@ -190,8 +190,10 @@ def energenie_tx_mqtt():
 	while True:
 		print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
 		item = q_tx_mqtt.get()
-		print("energenie_tx_mqtt: item for" + item['DeviceName'] + " found on queue...")
+		print("energenie_tx_mqtt: item for " + item['DeviceName'] + " found on queue...")
 		print(str(item))
+		data = item['data']
+
 		for metric, value in data:
 			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
 			print("energenie_tx_mqtt: publishing " + str(value) + " to topic " + publish_topic)
