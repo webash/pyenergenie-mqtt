@@ -129,15 +129,18 @@ def main():
 	#thread_txToEnergenie.start()
 	
 	# Start thread for receiving inbound energenie messages
+	print("Starting rxFromEnergenie thread...")
 	thread_rxFromEnergenie = threading.Thread(target=rx_energenie)
 	thread_rxFromEnergenie.daemon = True
 	thread_rxFromEnergenie.start()
 	
+	print("Starting rxProcessor thread...")
 	# Start thread for processing received inbound energenie, then sending to mqtt
 	thread_rxProcessor = threading.Thread(target=energenie_tx_mqtt)
 	thread_rxProcessor.daemon = True
 	thread_rxProcessor.start()
 	
+	print("Starting main while loop...")
 	while True:
 		try:
 			client = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
