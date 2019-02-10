@@ -1,6 +1,6 @@
 # For: https://github.com/webash/pyenergenie-mqtt
 # Install:
-# sudo ln -s /lib/systemd/system/pyenergenie-mqtt.Service
+# sudo ln -s /shared/pyenergenie-mqtt/pyenergenie-mqtt.service /lib/systemd/system/pyenergenie-mqtt.service
 # sudo systemctl enable pyenergenie-mqtt
 # sudo systemctl start pyenergenie-mqtt
 
