@@ -129,6 +129,9 @@ def rx_energenie(address, message):
 						rxq.put(item)
 					except:
 						print("Exception getting power")
+
+				# The device was found, so break from the for loop
+				break
 	else:
 		print("Not an energenie device...?")
 
