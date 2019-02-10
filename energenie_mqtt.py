@@ -60,7 +60,7 @@ def rx_energenie():
 					txq.put(item)
 				except:
 					print("Exception getting power")
-			elif d.product_id() == "PRODUCTID_MIHO005":
+			elif d.get_product_id() == "PRODUCTID_MIHO005":
 				try:
 					p = d.get_power()
 					print("Power MIHO005: %s" % str(p))
