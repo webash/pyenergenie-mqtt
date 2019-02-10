@@ -27,8 +27,10 @@ PRODUCTID_MIHO005                = 0x02   #         Adaptor Plus
 PRODUCTID_MIHO006                = 0x05   #         House Monitor
 
 
-txq = Queue.Queue()
-rxq = Queue.Queue()
+q_rx_mqtt = Queue.Queue()
+q_rx_energenie = Queue.Queue()
+q_tx_mqtt = Queue.Queue()
+#q_tx_energenie = Queue.Queue() # Not yet in use, TODO
 
 def rx_mqtt():
 	global mqtt_hostname
@@ -39,7 +41,7 @@ def rx_mqtt():
 	global mqtt_client_id
 	global mqtt_clean_session
 	global mqtt_subscribe_topic
-	global txq
+	global q_rx_mqtt
 
 	# The callback for when the client receives a CONNACK response from the server.
 	def on_connect(client, userdata, flags, rc):
@@ -53,8 +55,8 @@ def rx_mqtt():
 
 	# The callback for when a PUBLISH message is received from the server.
 	def on_message(client, userdata, msg):
-		global txq
-		txq.put(msg)
+		global q_rx_mqtt
+		q_rx_mqtt.put(msg)
 
 
 
@@ -79,11 +81,11 @@ def rx_mqtt():
 
 
 def mqtt_tx_energenie():
-	global txq
+	global q_rx_mqtt
 
 	while True:
 		try:
-			msg = txq.get()
+			msg = q_rx_mqtt.get()
 			print(msg.topic+" "+str(msg.payload))
 			name = msg.topic.split("/", 2)[1]
 			device = energenie.registry.get(name)
@@ -100,40 +102,61 @@ def mqtt_tx_energenie():
 		except:
 			print("Got exception")
 		finally:
-			txq.task_done()
+			q_rx_mqtt.task_done()
 			
 def rx_energenie(address, message):
-	global rxq
+	global q_rx_energenie
 
 	print("rx_energenie: new message from " + str(address) )
 
 	if address[0] == MFRID_ENERGENIE:
-		for d in energenie.registry.devices():
-			print("rx_energenie: checking if message from " + str(d))
-			#print( str(dir(d)) )
-			if address[2] == d.get_device_id():
-				#print( str(d.get_last_receive_time()) )
-				if address[1] == PRODUCTID_MIHO006:
-					try:
-						p = d.get_apparent_power()
-						print("Power MIHO006: %s" % str(p))
-						item = {'DeviceName': "powerfeed", 'data': {"apparent_power": str(p)}}
-						rxq.put(item)
-					except:
-						print("Exception getting power")
-				elif address[1] == PRODUCTID_MIHO005:
-					try:
-						p = d.get_apparent_power()
-						print("Power MIHO005: %s" % str(p))
-						item = {'DeviceName': "washingmachine", 'data': {"apparent_power": str(p)}}
-						rxq.put(item)
-					except:
-						print("Exception getting power")
+		# Retrieve list of names from the registry, so we can refer to the name of the device
+		for devicename in energenie.registry.names():
+			print("rx_energenie: checking if message from " + devicename)
 
+			# Using the name, retrieve the device
+			d = energenie.registry.get(devicename)
+
+			# Check if the message is from the current device of this iteration
+			if address[2] == d.get_device_id():
+				# Yes we found the device, so add to processing queue
+				print("rx_energenie: YES; add to process queue")
+				newQueueEntry = {'DeviceName': devicename, 'DeviceType': address[1]}
+				q_rx_energenie.put(newQueueEntry)
 				# The device was found, so break from the for loop
 				break
 	else:
 		print("Not an energenie device...?")
+
+
+def rx_energenie_process():
+	global q_rx_energenie
+
+	while true:
+		print("rx_energenie_process: awaiting item in q_rx_energenie...")
+		refreshed_device = q_rx_energenie.get()
+
+		print("rx_energenie_process: " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ") process beginning..."
+		if refreshed_device['DeviceType'] == PRODUCTID_MIHO006:
+			try:
+				p = d.get_apparent_power()
+				print("Power MIHO006: %s" % str(p))
+				item = {'DeviceName': "powerfeed", 'data': {"apparent_power": str(p)}}
+				q_tx_mqtt.put(item)
+			except:
+				print("rx_energenie_process: Exception getting power")
+		elif refreshed_device['DeviceType'] == PRODUCTID_MIHO005:
+			try:
+				p = d.get_apparent_power()
+				print("Power MIHO005: %s" % str(p))
+				item = {'DeviceName': "washingmachine", 'data': {"apparent_power": str(p)}}
+				q_tx_mqtt.put(item)
+			except:
+				print("rx_energenie_process: Exception getting power")
+		else:
+			print("rx_energenie_process: NOPE; No process defined for " + refreshed_device['DeviceName'] + " of type " + str(refreshed_device['DeviceType']))
+		q_rx_energenie.task_done()
+
 
 
 			
@@ -146,7 +169,7 @@ def energenie_tx_mqtt():
 	global mqtt_client_id
 	global mqtt_clean_session
 	global mqtt_publish_topic
-	global rxq
+	global q_tx_mqtt
 
 	print("energenie_tx_mqtt: creating mqtt.client...")
 	toMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
@@ -158,16 +181,15 @@ def energenie_tx_mqtt():
 	toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
 	
 	while True:
-		print("energenie_tx_mqtt: awaiting item in rxq...")
-		item = rxq.get()
+		print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
+		item = q_tx_mqtt.get()
 		print("energenie_tx_mqtt: item for" + item['DeviceName'] + " found on queue...")
 		print(str(item))
-		data = item['data']
 		for metric, value in data:
 			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
 			print("energenie_tx_mqtt: publishing " + str(value) + " to topic " + publish_topic)
 			toMqtt.publish(publish_topic, value)
-		rxq.task_done()
+		q_tx_mqtt.task_done()
 
 def main():
 	global mqtt_hostname
@@ -183,9 +205,16 @@ def main():
 	#thread_rxFromEnergenie = threading.Thread(target=rx_energenie)
 	#thread_rxFromEnergenie.daemon = True
 	#thread_rxFromEnergenie.start()
+	print("Binding fsk_router.when_incoming to rx_energenie...")
 	energenie.fsk_router.when_incoming(rx_energenie)
+
+	print("Starting rx_energenie_process thread...")
+	# Start thread for processing received inbound energenie, then sending to mqtt
+	thread_rxProcessor = threading.Thread(target=rx_energenie_process)
+	thread_rxProcessor.daemon = True
+	thread_rxProcessor.start()
 	
-	print("Starting rxProcessor thread...")
+	print("Starting energenie_tx_mqtt thread...")
 	# Start thread for processing received inbound energenie, then sending to mqtt
 	thread_rxProcessor = threading.Thread(target=energenie_tx_mqtt)
 	thread_rxProcessor.daemon = True
@@ -203,6 +232,10 @@ def main():
 
 	while True:
 		energenie.loop()
+
+		names = energenie.registry.names()
+		for name in names:
+			device = energenie.registry.get(name)
 	
 
 if __name__ == "__main__":
