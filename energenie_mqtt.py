@@ -206,6 +206,8 @@ def energenie_tx_mqtt():
 			value = data[metric]
 			if value:
 				value = 1
+			elif data[metric] = None:
+				value = ""
 
 			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
 			print("energenie_tx_mqtt: publishing " + str( value ) + " to topic " + publish_topic)
