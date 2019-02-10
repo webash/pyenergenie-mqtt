@@ -141,27 +141,35 @@ def rx_energenie_process():
 		d = energenie.registry.get( refreshed_device['DeviceName'] )
 
 		print("rx_energenie_process: " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ") process beginning...")
-		if refreshed_device['DeviceType'] == PRODUCTID_MIHO006:
-			try:
-				p = d.get_apparent_power()
-				print("Power MIHO006: %s" % str(p))
-				item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"apparent_power": str(p)}}
-				q_tx_mqtt.put(item)
-			except Exception as e:
-				print("rx_energenie_process: Exception getting power")
-				print(e)
-		elif refreshed_device['DeviceType'] == PRODUCTID_MIHO005:
-			try:
-				p = d.get_reactive_power()
-				v = d.get_voltage()
-				print("Power MIHO005: %s" % str(p))
-				item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"reactive_power": str(p), 'voltage': v}}
-				q_tx_mqtt.put(item)
-			except Exception as e:
-				print("rx_energenie_process: Exception getting power ")
-				print(e)
-		else:
-			print("rx_energenie_process: NOPE; No process defined for " + refreshed_device['DeviceName'] + " of type " + str(refreshed_device['DeviceType']))
+		#if refreshed_device['DeviceType'] == PRODUCTID_MIHO006:
+		#	try:
+		#		p = d.get_apparent_power()
+		#		print("Power MIHO006: %s" % str(p))
+		#		item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"apparent_power": str(p)}}
+		#		q_tx_mqtt.put(item)
+		#	except Exception as e:
+		#		print("rx_energenie_process: Exception getting power")
+		#		print(e)
+		#elif refreshed_device['DeviceType'] == PRODUCTID_MIHO005:
+		#	try:
+		#		p = d.get_reactive_power()
+		#		v = d.get_voltage()
+		#		print("Power MIHO005: %s" % str(p))
+		#		item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"reactive_power": str(p), 'voltage': v}}
+		#		q_tx_mqtt.put(item)
+		#	except Exception as e:
+		#		print("rx_energenie_process: Exception getting power ")
+		#		print(e)
+		#else:
+		#	print("rx_energenie_process: NOPE; No process defined for " + refreshed_device['DeviceName'] + " of type " + str(refreshed_device['DeviceType']))
+
+		item = {'DeviceName': refreshed_device['DeviceName'], 'data': {}}
+		for metric_name in dir(d.readings):
+			if not metric_name.startswith("__"):
+				value = getattr(d.readings, metric_name)
+				item['data'][metric_name] = value
+		q_tx_mqtt.put(item)
+		
 		q_rx_energenie.task_done()
 
 
