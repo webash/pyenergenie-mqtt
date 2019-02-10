@@ -55,8 +55,8 @@ def rx_energenie():
 		
 		for d in energenie.registry.devices():
 			print(d)
-			print( str(dir(d)) )
-			if d.get_product_id() == devices.PRODUCTID_MIHO006:
+			#print( str(dir(d)) )
+			if d.get_product_id() == 0x05: #devices.PRODUCTID_MIHO006:
 				try:
 					p = d.get_power()
 					print("Power MIHO006: %s" % str(p))
@@ -64,7 +64,7 @@ def rx_energenie():
 					rxq.put(item)
 				except:
 					print("Exception getting power")
-			elif d.get_product_id() == devices.PRODUCTID_MIHO005:
+			elif d.get_product_id() == 0x02: #devices.PRODUCTID_MIHO005:
 				try:
 					p = d.get_power()
 					print("Power MIHO005: %s" % str(p))
