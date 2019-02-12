@@ -136,41 +136,47 @@ def rx_energenie_process():
 	global q_rx_energenie
 
 	while True:
-		print("rx_energenie_process: awaiting item in q_rx_energenie...")
-		refreshed_device = q_rx_energenie.get()
-		d = energenie.registry.get( refreshed_device['DeviceName'] )
+		try:
+			print("rx_energenie_process: awaiting item in q_rx_energenie...")
+			refreshed_device = q_rx_energenie.get()
+			d = energenie.registry.get( refreshed_device['DeviceName'] )
 
-		print("rx_energenie_process: " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ") process beginning...")
-		#if refreshed_device['DeviceType'] == PRODUCTID_MIHO006:
-		#	try:
-		#		p = d.get_apparent_power()
-		#		print("Power MIHO006: %s" % str(p))
-		#		item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"apparent_power": str(p)}}
-		#		q_tx_mqtt.put(item)
-		#	except Exception as e:
-		#		print("rx_energenie_process: Exception getting power")
-		#		print(e)
-		#elif refreshed_device['DeviceType'] == PRODUCTID_MIHO005:
-		#	try:
-		#		p = d.get_reactive_power()
-		#		v = d.get_voltage()
-		#		print("Power MIHO005: %s" % str(p))
-		#		item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"reactive_power": str(p), 'voltage': v}}
-		#		q_tx_mqtt.put(item)
-		#	except Exception as e:
-		#		print("rx_energenie_process: Exception getting power ")
-		#		print(e)
-		#else:
-		#	print("rx_energenie_process: NOPE; No process defined for " + refreshed_device['DeviceName'] + " of type " + str(refreshed_device['DeviceType']))
+			print("rx_energenie_process: " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ") process beginning...")
+			#if refreshed_device['DeviceType'] == PRODUCTID_MIHO006:
+			#	try:
+			#		p = d.get_apparent_power()
+			#		print("Power MIHO006: %s" % str(p))
+			#		item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"apparent_power": str(p)}}
+			#		q_tx_mqtt.put(item)
+			#	except Exception as e:
+			#		print("rx_energenie_process: Exception getting power")
+			#		print(e)
+			#elif refreshed_device['DeviceType'] == PRODUCTID_MIHO005:
+			#	try:
+			#		p = d.get_reactive_power()
+			#		v = d.get_voltage()
+			#		print("Power MIHO005: %s" % str(p))
+			#		item = {'DeviceName': refreshed_device['DeviceName'], 'data': {"reactive_power": str(p), 'voltage': v}}
+			#		q_tx_mqtt.put(item)
+			#	except Exception as e:
+			#		print("rx_energenie_process: Exception getting power ")
+			#		print(e)
+			#else:
+			#	print("rx_energenie_process: NOPE; No process defined for " + refreshed_device['DeviceName'] + " of type " + str(refreshed_device['DeviceType']))
 
-		item = {'DeviceName': refreshed_device['DeviceName'], 'data': {}}
-		for metric_name in dir(d.readings):
-			if not metric_name.startswith("__"):
-				value = getattr(d.readings, metric_name)
-				item['data'][metric_name] = value
-		q_tx_mqtt.put(item)
+			item = {'DeviceName': refreshed_device['DeviceName'], 'data': {}}
+			for metric_name in dir(d.readings):
+				if not metric_name.startswith("__"):
+					value = getattr(d.readings, metric_name)
+					item['data'][metric_name] = value
+			q_tx_mqtt.put(item)
 
-		q_rx_energenie.task_done()
+			q_rx_energenie.task_done()
+		except Exception as e:
+			print("rx_energenie_process: exception occurred")
+			print(e)
+		finally
+			print("rx_energenie_process: restarting and waiting for next task")
 
 
 
@@ -196,23 +202,30 @@ def energenie_tx_mqtt():
 	toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
 	
 	while True:
-		print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
-		item = q_tx_mqtt.get()
-		print("energenie_tx_mqtt: item for " + item['DeviceName'] + " found on queue...")
-		print(str(item))
-		data = item['data']
+		try:
+			print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
+			item = q_tx_mqtt.get()
+			print("energenie_tx_mqtt: item for " + item['DeviceName'] + " found on queue...")
+			print(str(item))
+			data = item['data']
 
-		for metric in data.keys():
-			value = data[metric]
-			if value == True and type(value) == type(True):
-				value = 1
-			elif data[metric] == None:
-				value = ""
+			for metric in data.keys():
+				value = data[metric]
+				if value == True and type(value) == type(True):
+					value = 1
+				elif data[metric] == None:
+					value = ""
 
-			publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
-			print("energenie_tx_mqtt: publishing '" + str( value ) + "' to topic " + publish_topic)
-			toMqtt.publish(publish_topic, value)
-		q_tx_mqtt.task_done()
+				publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
+				print("energenie_tx_mqtt: publishing '" + str( value ) + "' to topic " + publish_topic)
+				toMqtt.publish(publish_topic, value)
+			q_tx_mqtt.task_done()
+		except Exception as e:
+			print("energenie_tx_mqtt(): exception occurred")
+			print(e)
+		finally:
+			print("energenie_tx_mqtt(): restarting and waiting for next task")
+			
 
 def main():
 	global mqtt_hostname
@@ -261,7 +274,7 @@ def main():
 
 	while True:
 		energenie.loop()
-	
+
 
 if __name__ == "__main__":
 	energenie.init()
