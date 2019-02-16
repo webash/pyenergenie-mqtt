@@ -208,7 +208,7 @@ def energenie_tx_mqtt():
 			print("energenie_tx_mqtt: client connected")
 			client.is_connected = True
 			energenie_tx_mqtt_client_connected = True
-		else
+		else:
 			print("energenie_tx_mqtt: Bad connection; rc = "+str(rc))
 	
 	def energenie_tx_mqtt_on_disconnect(client, userdata, rc):
