@@ -43,15 +43,22 @@ def rx_mqtt():
 	global mqtt_subscribe_topic
 	global q_rx_mqtt
 
+	rx_mqtt_client_connected = False
+
 	# The callback for when the client receives a CONNACK response from the server.
 	def on_connect(client, userdata, flags, rc):
 		global mqtt_subscribe_topic
-		print("Connected with result code "+str(rc))
+
+		print("rx_mqtt: Connected with result code "+str(rc))
+		rx_mqtt_client_connected = True
+		print("rx_mqtt: Setting rx_mqtt_client_connected = True")
+		# TODO: Add the on_disconnect logic, and a loop to ensure we're always connected
 
 		# Subscribing in on_connect() means that if we lose the connection and
 		# reconnect then subscriptions will be renewed.
-		print("Subscribing to "+mqtt_subscribe_topic+"/#")
+		print("rx_mqtt: Subscribing to "+mqtt_subscribe_topic+"/#")
 		client.subscribe(mqtt_subscribe_topic + "/#")
+
 
 	# The callback for when a PUBLISH message is received from the server.
 	def on_message(client, userdata, msg):
@@ -192,39 +199,57 @@ def energenie_tx_mqtt():
 	global mqtt_publish_topic
 	global q_tx_mqtt
 
-	print("energenie_tx_mqtt: creating mqtt.client...")
-	toMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
+	energenie_tx_mqtt_client_connected = False
 
-	if mqtt_username <> "":
-		print("energenie_tx_mqtt: using username and password...")
-		toMqtt.username_pw_set(mqtt_username, mqtt_password)
-	print("energenie_tx_mqtt: connecting to mqtt broker...")
-	toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
+	def energenie_tx_mqtt_on_connect():
+		global energenie_tx_mqtt_client_connected
+		energenie_tx_mqtt_client_connected = True
 	
+	def energenie_tx_mqtt_on_disconnect():
+		global energenie_tx_mqtt_client_connected
+		energenie_tx_mqtt_client_connected = False
+
 	while True:
-		try:
-			print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
-			item = q_tx_mqtt.get()
-			print("energenie_tx_mqtt: item for " + item['DeviceName'] + " found on queue...")
-			print(str(item))
-			data = item['data']
+		print("energenie_tx_mqtt: creating mqtt.client...")
+		toMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
+		toMqtt.on_connect = energenie_tx_mqtt_on_connect
+		toMqtt.on_disconnect = energenie_tx_mqtt_on_disconnect
 
-			for metric in data.keys():
-				value = data[metric]
-				if value == True and type(value) == type(True):
-					value = 1
-				elif data[metric] == None:
-					value = ""
+		if mqtt_username <> "":
+			print("energenie_tx_mqtt: using username and password...")
+			toMqtt.username_pw_set(mqtt_username, mqtt_password)
+		print("energenie_tx_mqtt: connecting to mqtt broker...")
+		toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
+		
+		while energenie_tx_mqtt_client_connected:
+			try:
+				print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
+				item = q_tx_mqtt.get()
+				print("energenie_tx_mqtt: item for " + item['DeviceName'] + " found on queue...")
+				print(str(item))
+				data = item['data']
 
-				publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
-				print("energenie_tx_mqtt: publishing '" + str( value ) + "' to topic " + publish_topic)
-				toMqtt.publish(publish_topic, value)
-			q_tx_mqtt.task_done()
-		except Exception as e:
-			print("energenie_tx_mqtt(): exception occurred")
-			print(e)
-		finally:
-			print("energenie_tx_mqtt(): restarting and waiting for next task")
+				for metric in data.keys():
+					value = data[metric]
+					if value == True and type(value) == type(True):
+						value = 1
+					elif data[metric] == None:
+						value = ""
+
+					publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
+					print("energenie_tx_mqtt: publishing '" + str( value ) + "' to topic " + publish_topic)
+					toMqtt.publish(publish_topic, value)
+				q_tx_mqtt.task_done()
+			except Exception as e:
+				print("energenie_tx_mqtt: exception occurred")
+				print(e)
+				if not energenie_tx_mqtt_client_connected:
+					print("energenie_tx_mqtt: mqtt client no longer connected, breaking processing loop")
+					break
+		print("energenie_tx_mqtt: broke from processing loop, as energenie_tx_mqtt_client_connected == " + str(energenie_tx_mqtt_client_connected))
+		print("energenie_tx_mqtt: sleeping for 5 seconds before restarting thread")
+		time.sleep(5)
+
 			
 
 def main():
@@ -236,32 +261,29 @@ def main():
 	global mqtt_client_id
 	global mqtt_clean_session
 	
-	# Start thread for receiving inbound energenie messages
-	#print("Starting rxFromEnergenie thread...")
-	#thread_rxFromEnergenie = threading.Thread(target=rx_energenie)
-	#thread_rxFromEnergenie.daemon = True
-	#thread_rxFromEnergenie.start()
+	# Bind event receiver for inbound energenie messages
 	print("Binding fsk_router.when_incoming to rx_energenie...")
 	energenie.fsk_router.when_incoming(rx_energenie)
 
-	print("Starting rx_energenie_process thread...")
 	# Start thread for processing received inbound energenie, then sending to mqtt
+	print("Starting rx_energenie_process thread...")
 	thread_rxProcessor = threading.Thread(target=rx_energenie_process)
 	thread_rxProcessor.daemon = True
 	thread_rxProcessor.start()
 	
-	print("Starting energenie_tx_mqtt thread...")
 	# Start thread for processing received inbound energenie, then sending to mqtt
+	print("Starting energenie_tx_mqtt thread...")
 	thread_rxProcessor = threading.Thread(target=energenie_tx_mqtt)
 	thread_rxProcessor.daemon = True
 	thread_rxProcessor.start()
 
+	# Start thread for receiving inbound mqtt messages, which will queue them for the other thread
 	#print("Starting rxFromMqtt thread...")
 	#thread_rxProcessor = threading.Thread(target=rx_mqtt)
 	#thread_rxProcessor.daemon = True
 	#thread_rxProcessor.start()
 
-	# Start a thread to process the key presses
+	# Start thread for processing mqtt messages, and sending them on to the energenie device
 	#thread_txToEnergenie = threading.Thread(target=mqtt_tx_energenie)
 	#thread_txToEnergenie.daemon = True
 	#thread_txToEnergenie.start()
