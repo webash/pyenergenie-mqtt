@@ -152,7 +152,7 @@ def rx_energenie_process():
 			refreshed_device = q_rx_energenie.get()
 			d = energenie.registry.get( refreshed_device['DeviceName'] )
 
-			print("rx_energenie_process: " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ") process beginning...")
+			print("rx_energenie_process: processing message from " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ")...")
 			#if refreshed_device['DeviceType'] == PRODUCTID_MIHO006:
 			#	try:
 			#		p = d.get_apparent_power()
@@ -230,12 +230,12 @@ def energenie_tx_mqtt():
 		print("energenie_tx_mqtt: waiting 5 sec to ensure connection...")
 		time.sleep(5)
 		
-		while energenie_tx_mqtt_client_connected:
+		while toMqtt.is_connected:
 			try:
 				print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
 				item = q_tx_mqtt.get()
 
-				print("energenie_tx_mqtt: item for " + item['DeviceName'] + " found on queue...")
+				print("energenie_tx_mqtt: publishing item for " + item['DeviceName'] + " (" + str(refreshed_device['DeviceType']) + ") found on queue...")
 				print(str(item))
 
 				data = item['data']
@@ -257,7 +257,7 @@ def energenie_tx_mqtt():
 				if not energenie_tx_mqtt_client_connected:
 					print("energenie_tx_mqtt: mqtt client no longer connected, breaking processing loop")
 					break
-		print("energenie_tx_mqtt: energenie_tx_mqtt_client_connected == " + str(energenie_tx_mqtt_client_connected))
+		print("energenie_tx_mqtt: toMqtt.is_connected == " + str(toMqtt.is_connected))
 		print("energenie_tx_mqtt: sleeping for 5 seconds before restarting thread")
 		time.sleep(5)
 
