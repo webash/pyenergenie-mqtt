@@ -202,19 +202,22 @@ def energenie_tx_mqtt():
 
 	energenie_tx_mqtt_client_connected = False
 
-	def energenie_tx_mqtt_on_connect():
+	def energenie_tx_mqtt_on_connect(client, userdata, flags, rc):
 		global energenie_tx_mqtt_client_connected
 		print("energenie_tx_mqtt: client connected")
+		client.is_connected = True
 		energenie_tx_mqtt_client_connected = True
 	
-	def energenie_tx_mqtt_on_disconnect():
+	def energenie_tx_mqtt_on_disconnect(client, userdata, rc):
 		global energenie_tx_mqtt_client_connected
 		print("energenie_tx_mqtt: client disconnected")
+		client.is_connected = False
 		energenie_tx_mqtt_client_connected = False
 
 	while True:
 		print("energenie_tx_mqtt: creating mqtt.client...")
 		toMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
+		toMqtt.is_connected = False
 		toMqtt.on_connect = energenie_tx_mqtt_on_connect
 		toMqtt.on_disconnect = energenie_tx_mqtt_on_disconnect
 
