@@ -2,7 +2,7 @@
 Mashing together pyenergenie and mqtt
 
 Requirements:
- - [[/whaleygeek/pyenergenie]]
+ - @whaleygeek/pyenergenie
  - MQTT broker
 
 Installation:
