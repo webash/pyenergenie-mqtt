@@ -175,7 +175,7 @@ def rx_energenie_process():
 			#else:
 			#	print("rx_energenie_process: NOPE; No process defined for " + refreshed_device['DeviceName'] + " of type " + str(refreshed_device['DeviceType']))
 
-			item = {'DeviceName': refreshed_device['DeviceName'], 'data': {}}
+			item = {'DeviceName': refreshed_device['DeviceName'], 'DeviceType': refreshed_device['DeviceType'], 'data': {}}
 			for metric_name in dir(d.readings):
 				if not metric_name.startswith("__"):
 					value = getattr(d.readings, metric_name)
