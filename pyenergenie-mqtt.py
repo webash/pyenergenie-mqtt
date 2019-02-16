@@ -10,6 +10,10 @@ import paho.mqtt.client as mqtt
 import Queue
 import threading
 
+# TODO: Make logging less verbose, or configurably verbose
+# TODO: Log errors to separate output, so they can more easily be discovered
+# TODO: Configure last_will on energenie_tx_mqtt so that we know when it has disappeared
+
 mqtt_hostname = "localhost"
 mqtt_port = 1883
 mqtt_keepalive = 60
@@ -182,9 +186,6 @@ def rx_energenie_process():
 		except Exception as e:
 			print("rx_energenie_process: exception occurred")
 			print(e)
-		finally
-			print("rx_energenie_process: restarting and waiting for next task")
-
 
 
 			
@@ -225,8 +226,10 @@ def energenie_tx_mqtt():
 			try:
 				print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
 				item = q_tx_mqtt.get()
+
 				print("energenie_tx_mqtt: item for " + item['DeviceName'] + " found on queue...")
 				print(str(item))
+
 				data = item['data']
 
 				for metric in data.keys():
@@ -237,7 +240,7 @@ def energenie_tx_mqtt():
 						value = ""
 
 					publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
-					print("energenie_tx_mqtt: publishing '" + str( value ) + "' to topic " + publish_topic)
+					#print("energenie_tx_mqtt: publishing '" + str( value ) + "' to topic " + publish_topic)
 					toMqtt.publish(publish_topic, value)
 				q_tx_mqtt.task_done()
 			except Exception as e:
