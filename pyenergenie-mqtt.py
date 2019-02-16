@@ -204,13 +204,16 @@ def energenie_tx_mqtt():
 
 	def energenie_tx_mqtt_on_connect(client, userdata, flags, rc):
 		global energenie_tx_mqtt_client_connected
-		print("energenie_tx_mqtt: client connected")
-		client.is_connected = True
-		energenie_tx_mqtt_client_connected = True
+		if rc == 0:
+			print("energenie_tx_mqtt: client connected")
+			client.is_connected = True
+			energenie_tx_mqtt_client_connected = True
+		else
+			print("energenie_tx_mqtt: Bad connection; rc = "+str(rc))
 	
 	def energenie_tx_mqtt_on_disconnect(client, userdata, rc):
 		global energenie_tx_mqtt_client_connected
-		print("energenie_tx_mqtt: client disconnected")
+		print("energenie_tx_mqtt: client disconnected " + str(rc))
 		client.is_connected = False
 		energenie_tx_mqtt_client_connected = False
 
@@ -227,8 +230,9 @@ def energenie_tx_mqtt():
 		print("energenie_tx_mqtt: connecting to mqtt broker...")
 		toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
 
-		print("energenie_tx_mqtt: waiting 5 sec to ensure connection...")
-		time.sleep(5)
+		while not toMqtt.is_connected:
+			print("energenie_tx_mqtt: waiting to ensure connection...")
+			time.sleep(0.5)
 		
 		while toMqtt.is_connected:
 			try:
