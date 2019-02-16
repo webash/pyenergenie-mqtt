@@ -120,12 +120,12 @@ def mqtt_tx_energenie():
 def rx_energenie(address, message):
 	global q_rx_energenie
 
-	print("rx_energenie: new message from " + str(address) )
+	#print("rx_energenie: new message from " + str(address) )
 
 	if address[0] == MFRID_ENERGENIE:
 		# Retrieve list of names from the registry, so we can refer to the name of the device
 		for devicename in energenie.registry.names():
-			print("rx_energenie: checking if message from " + devicename)
+			#print("rx_energenie: checking if message from " + devicename)
 
 			# Using the name, retrieve the device
 			d = energenie.registry.get(devicename)
@@ -133,13 +133,13 @@ def rx_energenie(address, message):
 			# Check if the message is from the current device of this iteration
 			if address[2] == d.get_device_id():
 				# Yes we found the device, so add to processing queue
-				print("rx_energenie: YES; add to process queue")
+				print("rx_energenie: Queuing message from " + str(address) + " - " + devicename)
 				newQueueEntry = {'DeviceName': devicename, 'DeviceType': address[1]}
 				q_rx_energenie.put(newQueueEntry)
 				# The device was found, so break from the for loop
 				break
 	else:
-		print("Not an energenie device...?")
+		print("rx_energenie: Not an energenie device " + str(address))
 
 
 
@@ -204,10 +204,12 @@ def energenie_tx_mqtt():
 
 	def energenie_tx_mqtt_on_connect():
 		global energenie_tx_mqtt_client_connected
+		print("energenie_tx_mqtt: client connected")
 		energenie_tx_mqtt_client_connected = True
 	
 	def energenie_tx_mqtt_on_disconnect():
 		global energenie_tx_mqtt_client_connected
+		print("energenie_tx_mqtt: client disconnected")
 		energenie_tx_mqtt_client_connected = False
 
 	while True:
@@ -221,6 +223,9 @@ def energenie_tx_mqtt():
 			toMqtt.username_pw_set(mqtt_username, mqtt_password)
 		print("energenie_tx_mqtt: connecting to mqtt broker...")
 		toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
+
+		print("energenie_tx_mqtt: waiting 5 sec to ensure connection...")
+		time.sleep(5)
 		
 		while energenie_tx_mqtt_client_connected:
 			try:
@@ -249,7 +254,7 @@ def energenie_tx_mqtt():
 				if not energenie_tx_mqtt_client_connected:
 					print("energenie_tx_mqtt: mqtt client no longer connected, breaking processing loop")
 					break
-		print("energenie_tx_mqtt: broke from processing loop, as energenie_tx_mqtt_client_connected == " + str(energenie_tx_mqtt_client_connected))
+		print("energenie_tx_mqtt: energenie_tx_mqtt_client_connected == " + str(energenie_tx_mqtt_client_connected))
 		print("energenie_tx_mqtt: sleeping for 5 seconds before restarting thread")
 		time.sleep(5)
 
