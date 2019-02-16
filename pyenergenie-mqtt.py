@@ -239,7 +239,7 @@ def energenie_tx_mqtt():
 				print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
 				item = q_tx_mqtt.get()
 
-				print("energenie_tx_mqtt: publishing item for " + item['DeviceName'] + " (" + str(refreshed_device['DeviceType']) + ") found on queue...")
+				print("energenie_tx_mqtt: publishing item for " + item['DeviceName'] + " (" + str(item['DeviceType']) + ") found on queue...")
 				print(str(item))
 
 				data = item['data']
