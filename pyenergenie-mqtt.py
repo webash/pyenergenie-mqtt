@@ -230,11 +230,11 @@ def energenie_tx_mqtt():
 		print("energenie_tx_mqtt: connecting to mqtt broker...")
 		toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
 
-		while not toMqtt.is_connected:
-			print("energenie_tx_mqtt: waiting to ensure connection...")
-			time.sleep(0.5)
+		#while not toMqtt.is_connected:
+		#	print("energenie_tx_mqtt: waiting to ensure connection...")
+		#	time.sleep(0.5)
 		
-		while toMqtt.is_connected:
+		while True:
 			try:
 				print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
 				item = q_tx_mqtt.get()
@@ -258,7 +258,7 @@ def energenie_tx_mqtt():
 			except Exception as e:
 				print("energenie_tx_mqtt: exception occurred")
 				print(e)
-				if not energenie_tx_mqtt_client_connected:
+				if not toMqtt.is_connected:
 					print("energenie_tx_mqtt: mqtt client no longer connected, breaking processing loop")
 					break
 		print("energenie_tx_mqtt: toMqtt.is_connected == " + str(toMqtt.is_connected))
