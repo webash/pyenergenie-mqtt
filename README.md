@@ -1,7 +1,7 @@
 # pyenergenie-mqtt
 Mashing together pyenergenie and mqtt.
 
-I really like the (OpenEnergyMonitor)[https://openenergymonitor.org]'s [emonCMS](https://github.com/emoncms/emoncms) project for ingesting and display energy (gas/eletricity) information. BUT their open hardware was overkill for my residential setup which only has one feed [and no solar]. I also liked Energenie's hardware, but their mihome4u.co.uk site/software was lacking in features and extensibility. So, with this project I was able to merge the hardware of Energenie mi|home with OpenEnergyMonitor's emonCMS. It takes the pyenergenie Python module and mashes it up with MQTT, where the emonCMS mqtt_input service picks up the input data to use in the feeds. I can also then use Node Red to further mash-up the MQTT data feeds.
+I really like the [OpenEnergyMonitor](https://openenergymonitor.org)'s [emonCMS](https://github.com/emoncms/emoncms) project for ingesting and display energy (gas/eletricity) information. BUT their open hardware was overkill for my residential setup which only has one feed [and no solar]. I also liked Energenie's hardware, but their mihome4u.co.uk site/software was lacking in features and extensibility. So, with this project I was able to merge the hardware of Energenie mi|home with OpenEnergyMonitor's emonCMS. It takes the pyenergenie Python module and mashes it up with MQTT, where the emonCMS mqtt_input service picks up the input data to use in the feeds. I can also then use Node Red to further mash-up the MQTT data feeds.
 
 Requirements:
  - [whaleygeek/pyenergenie](https://github.com/whaleygeek/pyenergenie/)
