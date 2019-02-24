@@ -220,6 +220,7 @@ def energenie_tx_mqtt():
 	
 	def energenie_tx_mqtt_on_publish(client, userdata, mid):
 		#print("energenie_tx_mqtt: publish of " + str(mid) + " successful")
+		pass
 
 	#TODO: Move client instantiation outside of loop, manage connection status with single object
 	while True:
