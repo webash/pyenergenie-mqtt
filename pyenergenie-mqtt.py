@@ -227,6 +227,7 @@ def energenie_tx_mqtt():
 		toMqtt.is_connected = False
 		toMqtt.on_connect = energenie_tx_mqtt_on_connect
 		toMqtt.on_disconnect = energenie_tx_mqtt_on_disconnect
+		toMqtt.on_publish = energenie_tx_mqtt_on_publish
 
 		if mqtt_username <> "":
 			print("energenie_tx_mqtt: using username and password...")
