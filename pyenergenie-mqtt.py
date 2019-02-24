@@ -229,12 +229,13 @@ def energenie_tx_mqtt():
 			toMqtt.username_pw_set(mqtt_username, mqtt_password)
 		print("energenie_tx_mqtt: connecting to mqtt broker...")
 		toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
+		toMqtt.loop_start()
 
 		#while not toMqtt.is_connected:
 		#	print("energenie_tx_mqtt: waiting to ensure connection...")
 		#	time.sleep(0.5)
 		
-		while True:
+		while toMqtt.is_connected:
 			try:
 				print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
 				item = q_tx_mqtt.get()
