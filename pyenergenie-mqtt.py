@@ -219,8 +219,9 @@ def energenie_tx_mqtt():
 		#client.loop_stop()
 	
 	def energenie_tx_mqtt_on_publish(client, userdata, mid):
-		print("energenie_tx_mqtt: publish of " + str(mid) + " successful")
+		#print("energenie_tx_mqtt: publish of " + str(mid) + " successful")
 
+	#TODO: Move client instantiation outside of loop, manage connection status with single object
 	while True:
 		print("energenie_tx_mqtt: creating mqtt.client...")
 		toMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
@@ -261,7 +262,7 @@ def energenie_tx_mqtt():
 					publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
 					#print("energenie_tx_mqtt: publishing '" + str( value ) + "' to topic " + publish_topic)
 					publish_result = toMqtt.publish(publish_topic, value)
-					print("energenie_tx_mqtt: publish returned " + str(publish_result[1]))
+					#print("energenie_tx_mqtt: publish returned " + str(publish_result[1]))
 				q_tx_mqtt.task_done()
 			except Exception as e:
 				print("energenie_tx_mqtt: exception occurred")
