@@ -216,6 +216,7 @@ def energenie_tx_mqtt():
 		print("energenie_tx_mqtt: client disconnected " + str(rc))
 		client.is_connected = False
 		energenie_tx_mqtt_client_connected = False
+		#client.loop_stop()
 
 	while True:
 		print("energenie_tx_mqtt: creating mqtt.client...")
@@ -229,13 +230,14 @@ def energenie_tx_mqtt():
 			toMqtt.username_pw_set(mqtt_username, mqtt_password)
 		print("energenie_tx_mqtt: connecting to mqtt broker...")
 		toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
+		print("energenie_tx_mqtt: toMqtt.loop_start() thread starting...")
 		toMqtt.loop_start()
 
 		#while not toMqtt.is_connected:
 		#	print("energenie_tx_mqtt: waiting to ensure connection...")
 		#	time.sleep(0.5)
 		
-		while toMqtt.is_connected:
+		while True:
 			try:
 				print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
 				item = q_tx_mqtt.get()
@@ -263,6 +265,8 @@ def energenie_tx_mqtt():
 					print("energenie_tx_mqtt: mqtt client no longer connected, breaking processing loop")
 					break
 		print("energenie_tx_mqtt: toMqtt.is_connected == " + str(toMqtt.is_connected))
+		print("energenie_tx_mqtt: toMqtt.loop_stop()")
+		toMqtt.loop_stop()
 		print("energenie_tx_mqtt: sleeping for 5 seconds before restarting thread")
 		time.sleep(5)
 
