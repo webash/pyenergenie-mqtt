@@ -3,9 +3,9 @@
 # - https://github.com/whaleygeek/pyenergenie/blob/master/src/mihome_energy_monitor.py
 import sys
 import time
-#sys.path.insert(0, '/shared/pyenergenie-master/src')
-from pyenergenie.src import energenie as energenie
-from pyenergenie.src.energenie import Devices as energenieDevices
+sys.path.insert(0, './pyenergenie/src')
+import energenie as energenie
+import energenie.Devices as energenieDevices
 import paho.mqtt.client as mqtt
 import Queue
 import threading
