@@ -5,7 +5,7 @@ import sys
 import time
 #sys.path.insert(0, '/shared/pyenergenie-master/src')
 from pyenergenie.src import energenie as energenie
-from pyenergenie.src import energenie.Devices as energenieDevices
+from pyenergenie.src.energenie import Devices as energenieDevices
 import paho.mqtt.client as mqtt
 import Queue
 import threading
