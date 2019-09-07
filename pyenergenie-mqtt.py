@@ -141,7 +141,7 @@ def rx_energenie(address, message):
 			# Check if the message is from the current device of this iteration
 			if address[2] == d.get_device_id():
 				# Yes we found the device, so add to processing queue
-				print("rx_energenie: Queuing message from " + str(address) + " - " + devicename)
+				#print("rx_energenie: Queuing message from " + str(address) + " - " + devicename)
 				newQueueEntry = {'DeviceName': devicename, 'DeviceType': address[1]}
 				q_rx_energenie.put(newQueueEntry)
 				# The device was found, so break from the for loop
@@ -156,11 +156,11 @@ def rx_energenie_process():
 
 	while True:
 		try:
-			print("rx_energenie_process: awaiting item in q_rx_energenie...")
+			#print("rx_energenie_process: awaiting item in q_rx_energenie...")
 			refreshed_device = q_rx_energenie.get()
 			d = energenie.registry.get( refreshed_device['DeviceName'] )
 
-			print("rx_energenie_process: processing message from " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ")...")
+			#print("rx_energenie_process: processing message from " + refreshed_device['DeviceName'] + " (type: " + str(refreshed_device['DeviceType']) + ")...")
 			#if refreshed_device['DeviceType'] == PRODUCTID_MIHO006:
 			#	try:
 			#		p = d.get_apparent_power()
@@ -253,10 +253,10 @@ def energenie_tx_mqtt():
 		
 		while True:
 			try:
-				print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
+				#print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
 				item = q_tx_mqtt.get()
 
-				print("energenie_tx_mqtt: publishing item for " + item['DeviceName'] + " (" + str(item['DeviceType']) + ") found on queue...")
+				#print("energenie_tx_mqtt: publishing item for " + item['DeviceName'] + " (" + str(item['DeviceType']) + ") found on queue...")
 				print(str(item))
 
 				data = item['data']
