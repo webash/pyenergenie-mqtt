@@ -3,7 +3,7 @@
 # - https://github.com/whaleygeek/pyenergenie/blob/master/src/mihome_energy_monitor.py
 import sys
 import time
-sys.path.insert(0, './pyenergenie/src')
+sys.path.insert(1, './pyenergenie/src')
 import energenie as energenie
 import energenie.Devices as energenieDevices
 import paho.mqtt.client as mqtt
@@ -17,7 +17,7 @@ import threading
 
 mqtt_hostname = "localhost"
 mqtt_port = 1883
-mqtt_keepalive = 60
+mqtt_keepalive = 10
 mqtt_username = ""
 mqtt_password = ""
 mqtt_client_id = "agn-sensor01-lon_energenie"
@@ -52,7 +52,7 @@ def rx_mqtt():
 	rx_mqtt_client_connected = False
 
 	# The callback for when the client receives a CONNACK response from the server.
-	def on_connect(client, userdata, flags, rc):
+	def rx_mqtt_on_connect(client, userdata, flags, rc):
 		global mqtt_subscribe_topic
 
 		print("rx_mqtt: Connected with result code " + str(rc))
@@ -64,32 +64,36 @@ def rx_mqtt():
 		# reconnect then subscriptions will be renewed.
 		print("rx_mqtt: Subscribing to " + mqtt_subscribe_topic + "/#")
 		client.subscribe(mqtt_subscribe_topic + "/#")
-
+	
+	def rx_mqtt_on_disconnect(client, userdata, flags, rc):
+		rx_mqtt_client_connected = False
+		print("rx_mqtt: Disonnected with result code " + str(rc))
 
 	# The callback for when a PUBLISH message is received from the server.
-	def on_message(client, userdata, msg):
+	def rx_mqtt_on_message(client, userdata, msg):
 		global q_rx_mqtt
 		q_rx_mqtt.put(msg)
 
 
 
-	print("Starting mqtt subscribing loop...")
+	print("rx_mqtt: Starting mqtt subscribing loop...")
 	while True:
 		try:
-			client = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
-			client.on_connect = on_connect
-			client.on_message = on_message
+			fromMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
+			fromMqtt.on_connect = on_connect
+			fromMqtt.on_disconnect
+			fromMqtt.on_message = on_message
 
 			if mqtt_username != "":
-				client.username_pw_set(mqtt_username, mqtt_password)
+				fromMqtt.username_pw_set(mqtt_username, mqtt_password)
 			
-			client.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
+			fromMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
 
 			# Blocking call that processes network traffic, dispatches callbacks and
 			# handles reconnecting.
 			# Other loop*() functions are available that give a threaded interface and a
 			# manual interface.
-			client.loop_forever()
+			fromMqtt.loop_forever()
 		except Exception as e:
 			print("rx_mqtt: exception occurred")
 			print(e)
@@ -213,7 +217,7 @@ def energenie_tx_mqtt():
 	def energenie_tx_mqtt_on_connect(client, userdata, flags, rc):
 		global energenie_tx_mqtt_client_connected
 		if rc == 0:
-			print("energenie_tx_mqtt: client connected")
+			#print("energenie_tx_mqtt: client connected")
 			client.is_connected = True
 			energenie_tx_mqtt_client_connected = True
 		else:
@@ -221,7 +225,7 @@ def energenie_tx_mqtt():
 	
 	def energenie_tx_mqtt_on_disconnect(client, userdata, rc):
 		global energenie_tx_mqtt_client_connected
-		print("energenie_tx_mqtt: client disconnected " + str(rc))
+		#print("energenie_tx_mqtt: client disconnected " + str(rc))
 		client.is_connected = False
 		energenie_tx_mqtt_client_connected = False
 		#client.loop_stop()
@@ -257,7 +261,7 @@ def energenie_tx_mqtt():
 				item = q_tx_mqtt.get()
 
 				#print("energenie_tx_mqtt: publishing item for " + item['DeviceName'] + " (" + str(item['DeviceType']) + ") found on queue...")
-				print(str(item))
+				#print(str(item))
 
 				data = item['data']
 
