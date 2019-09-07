@@ -3,9 +3,9 @@
 # - https://github.com/whaleygeek/pyenergenie/blob/master/src/mihome_energy_monitor.py
 import sys
 import time
-sys.path.insert(0, '/shared/pyenergenie-master/src')
-import energenie
-import energenie.Devices
+#sys.path.insert(0, '/shared/pyenergenie-master/src')
+import pyenergenie.src.energenie as energenie
+import pyenergenie.src.energenie.Devices as energenie.Devices
 import paho.mqtt.client as mqtt
 import Queue
 import threading
@@ -30,7 +30,8 @@ MFRID_ENERGENIE                  = 0x04
 PRODUCTID_MIHO004                = 0x01   #         Monitor only
 PRODUCTID_MIHO005                = 0x02   #         Adaptor Plus
 PRODUCTID_MIHO006                = 0x05   #         House Monitor
-
+PRODUCTID_MIHO032                 = 0x0C  # FSK motion sensor
+PRODUCTID_MIHO033                 = 0x0D    # FSK open sensor
 
 q_rx_mqtt = Queue.Queue()
 q_rx_energenie = Queue.Queue()
