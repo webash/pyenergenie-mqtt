@@ -1,0 +1,3 @@
+[submodule "pyenergenie"]
+	path = pyenergenie
+	url = https://github.com/whaleygeek/pyenergenie.git

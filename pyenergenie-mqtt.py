@@ -13,6 +13,7 @@ import threading
 # TODO: Make logging less verbose, or configurably verbose
 # TODO: Log errors to separate output, so they can more easily be discovered
 # TODO: Configure last_will on energenie_tx_mqtt so that we know when it has disappeared
+# TODO: Move configuration into configuration file
 
 mqtt_hostname = "localhost"
 mqtt_port = 1883
