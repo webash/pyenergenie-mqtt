@@ -36,7 +36,7 @@ PRODUCTID_MIHO033                 = 0x0D    # FSK open sensor
 q_rx_mqtt = Queue.Queue()
 q_rx_energenie = Queue.Queue()
 q_tx_mqtt = Queue.Queue()
-#q_tx_energenie = Queue.Queue() # Not yet in use, TODO
+q_tx_energenie = Queue.Queue() # Not yet in use, TODO
 
 def rx_mqtt():
 	global mqtt_hostname
@@ -55,14 +55,14 @@ def rx_mqtt():
 	def on_connect(client, userdata, flags, rc):
 		global mqtt_subscribe_topic
 
-		print("rx_mqtt: Connected with result code "+str(rc))
+		print("rx_mqtt: Connected with result code " + str(rc))
 		rx_mqtt_client_connected = True
 		print("rx_mqtt: Setting rx_mqtt_client_connected = True")
 		# TODO: Add the on_disconnect logic, and a loop to ensure we're always connected
 
 		# Subscribing in on_connect() means that if we lose the connection and
 		# reconnect then subscriptions will be renewed.
-		print("rx_mqtt: Subscribing to "+mqtt_subscribe_topic+"/#")
+		print("rx_mqtt: Subscribing to " + mqtt_subscribe_topic + "/#")
 		client.subscribe(mqtt_subscribe_topic + "/#")
 
 
@@ -82,6 +82,7 @@ def rx_mqtt():
 
 			if mqtt_username != "":
 				client.username_pw_set(mqtt_username, mqtt_password)
+			
 			client.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
 
 			# Blocking call that processes network traffic, dispatches callbacks and
@@ -89,8 +90,11 @@ def rx_mqtt():
 			# Other loop*() functions are available that give a threaded interface and a
 			# manual interface.
 			client.loop_forever()
+		except Exception as e:
+			print("rx_mqtt: exception occurred")
+			print(e)
 		finally:
-			print("Restarting...")
+			print("rx_mqtt: Restarting...")
 
 
 def mqtt_tx_energenie():
@@ -99,21 +103,23 @@ def mqtt_tx_energenie():
 	while True:
 		try:
 			msg = q_rx_mqtt.get()
-			print(msg.topic+" "+str(msg.payload))
+			print("mqtt_tx_energenie: " + msg.topic + " " + str(msg.payload))
+
 			name = msg.topic.split("/", 2)[1]
 			device = energenie.registry.get(name)
 			if str(msg.payload) == "1":
-				print(name+" on")
+				print("mqtt_tx_energenie: " + name + " - on")
 				for x in range(0, 5):
 					device.turn_on()
 					time.sleep(0.1)
 			else:
-				print(name+" off")
+				print("mqtt_tx_energenie: " + name + " - off")
 				for x in range(0, 5):
 					device.turn_off()
 					time.sleep(0.1)
-		except:
-			print("Got exception")
+		except Exception as e:
+			print("mqtt_tx_energenie: Exception occurred")
+			print(e)
 		finally:
 			q_rx_mqtt.task_done()
 			
@@ -307,15 +313,16 @@ def main():
 	thread_rxProcessor.start()
 
 	# Start thread for receiving inbound mqtt messages, which will queue them for the other thread
-	#print("Starting rxFromMqtt thread...")
-	#thread_rxProcessor = threading.Thread(target=rx_mqtt)
-	#thread_rxProcessor.daemon = True
-	#thread_rxProcessor.start()
+	print("Starting rxFromMqtt thread...")
+	thread_rxProcessor = threading.Thread(target=rx_mqtt)
+	thread_rxProcessor.daemon = True
+	thread_rxProcessor.start()
 
 	# Start thread for processing mqtt messages, and sending them on to the energenie device
-	#thread_txToEnergenie = threading.Thread(target=mqtt_tx_energenie)
-	#thread_txToEnergenie.daemon = True
-	#thread_txToEnergenie.start()
+	print("Starting txToEnergenie thread...")
+	thread_txToEnergenie = threading.Thread(target=mqtt_tx_energenie)
+	thread_txToEnergenie.daemon = True
+	thread_txToEnergenie.start()
 
 	print("These are devices in the registry...")
 	names = energenie.registry.names()
