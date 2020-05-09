@@ -36,7 +36,7 @@ PRODUCTID_MIHO033                 = 0x0D    # FSK open sensor
 q_rx_mqtt = Queue.Queue()
 q_rx_energenie = Queue.Queue()
 q_tx_mqtt = Queue.Queue()
-q_tx_energenie = Queue.Queue() # Not yet in use, TODO
+q_tx_energenie = Queue.Queue()
 
 def rx_mqtt():
 	global mqtt_hostname
@@ -67,7 +67,7 @@ def rx_mqtt():
 	
 	def rx_mqtt_on_disconnect(client, userdata, flags, rc):
 		rx_mqtt_client_connected = False
-		print("rx_mqtt: Disonnected with result code " + str(rc))
+		print("rx_mqtt: Disconnected with result code " + str(rc))
 
 	# The callback for when a PUBLISH message is received from the server.
 	def rx_mqtt_on_message(client, userdata, msg):
@@ -80,9 +80,9 @@ def rx_mqtt():
 	while True:
 		try:
 			fromMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
-			fromMqtt.on_connect = on_connect
-			fromMqtt.on_disconnect
-			fromMqtt.on_message = on_message
+			fromMqtt.on_connect = rx_mqtt_on_connect
+			fromMqtt.on_disconnect = rx_mqtt_ondisconnect
+			fromMqtt.on_message = rx_mqtt_on_message
 
 			if mqtt_username != "":
 				fromMqtt.username_pw_set(mqtt_username, mqtt_password)
