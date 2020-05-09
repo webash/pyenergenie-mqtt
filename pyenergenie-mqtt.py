@@ -21,6 +21,7 @@ mqtt_keepalive = 10
 mqtt_username = ""
 mqtt_password = ""
 mqtt_client_id = "agn-sensor01-lon_energenie"
+mqtt_subscribe_client_id = "agn-sensor01-lon_pyenergenie_subscribe"
 mqtt_clean_session = True
 mqtt_publish_topic = "emon"
 mqtt_subscribe_topic = "energenie"
@@ -44,7 +45,7 @@ rx_mqtt_client_connected = False
 def rx_mqtt_on_connect(client, userdata, flags, rc):
 	global mqtt_subscribe_topic
 	global rx_mqtt_client_connected
-	
+
 	print("rx_mqtt: Connected to %s:%s with result code %s" % (client._host, client._port, rc))
 	rx_mqtt_client_connected = True
 	print("rx_mqtt: Set rx_mqtt_client_connected as True = " + str(rx_mqtt_client_connected))
@@ -77,7 +78,7 @@ def rx_mqtt():
 	global mqtt_keepalive
 	global mqtt_username
 	global mqtt_password
-	global mqtt_client_id
+	global mqtt_subscribe_client_id
 	global mqtt_clean_session
 	global mqtt_subscribe_topic
 	global q_rx_mqtt
@@ -86,7 +87,7 @@ def rx_mqtt():
 	print("rx_mqtt: Starting mqtt subscribing loop...")
 	while True:
 		try:
-			fromMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
+			fromMqtt = mqtt.Client(client_id=mqtt_subscribe_client_id, clean_session=mqtt_clean_session)
 			fromMqtt.on_connect = rx_mqtt_on_connect
 			fromMqtt.on_disconnect = rx_mqtt_on_disconnect
 			fromMqtt.on_subscribe = rx_mqtt_on_subscribe
