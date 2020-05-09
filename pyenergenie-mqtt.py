@@ -348,7 +348,7 @@ def main():
 		device = energenie.registry.get(name)
 
 	while True:
-		#energenie.loop()
+		energenie.loop()
 		time.sleep(0.25)
 
 
