@@ -115,11 +115,13 @@ def mqtt_tx_energenie():
 				print("mqtt_tx_energenie: " + name + " - on")
 				for x in range(0, 5):
 					device.turn_on()
+					print("mqtt_tx_energenie: " + name + " - on attempt " + x)
 					time.sleep(0.1)
 			else:
 				print("mqtt_tx_energenie: " + name + " - off")
 				for x in range(0, 5):
 					device.turn_off()
+					print("mqtt_tx_energenie: " + name + " - off attempt " + x
 					time.sleep(0.1)
 		except Exception as e:
 			print("mqtt_tx_energenie: Exception occurred")
