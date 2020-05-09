@@ -358,20 +358,23 @@ def main():
 			try:
 				print("mqtt_tx_energenie: " + msg.topic + " " + str(msg.payload))
 
-				name = msg.topic.split("/", 2)[1]
+				topic_parts = msg.topic.split("/", 3)
+				name = topic_parts[1]
+				action = topic_parts[2]
 				device = energenie.registry.get(name)
-				if str(msg.payload) == "1":
-					print("mqtt_tx_energenie: " + name + " - on")
-					#for x in range(0, 5):
-					device.turn_on()
-					#	print("mqtt_tx_energenie: " + name + " - on attempt " + str(x))
-					#	time.sleep(0.1)
+				
+				if action == "switch":
+					if str(msg.payload) == "1":
+						print("mqtt_tx_energenie: " + name + " - on")
+						device.turn_on()
+					else:
+						print("mqtt_tx_energenie: " + name + " - off")
+						device.turn_off()
+				elif action == "":
+
 				else:
-					print("mqtt_tx_energenie: " + name + " - off")
-					#for x in range(0, 5):
-					device.turn_off()
-					#	print("mqtt_tx_energenie: " + name + " - off attempt " + str(x))
-					#	time.sleep(0.1)
+					# Action not found
+					print("mqtt_tx_energenie: action '" + action + "' unknown, nothing sent")
 			except Exception as e:
 				print("mqtt_tx_energenie: Exception occurred")
 				print(e)
