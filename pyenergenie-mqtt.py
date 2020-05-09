@@ -49,15 +49,14 @@ def rx_mqtt():
 	global mqtt_subscribe_topic
 	global q_rx_mqtt
 
-	global rx_mqtt_client_connected = False
+	rx_mqtt_client_connected = False
 
 	# The callback for when the client receives a CONNACK response from the server.
 	def rx_mqtt_on_connect(client, userdata, flags, rc):
 		global mqtt_subscribe_topic
-		global rx_mqtt_client_connected
 
 		print("rx_mqtt: Connected with result code " + str(rc))
-		rx_mqtt_client_connected = True
+		rx_mqtt.rx_mqtt_client_connected = True
 		print("rx_mqtt: Setting rx_mqtt_client_connected = True")
 		# TODO: Add the on_disconnect logic, and a loop to ensure we're always connected
 
@@ -67,8 +66,7 @@ def rx_mqtt():
 		client.subscribe(mqtt_subscribe_topic + "/#")
 	
 	def rx_mqtt_on_disconnect(client, userdata, flags, rc):
-		global rx_mqtt_client_connected
-		rx_mqtt_client_connected = False
+		rx_mqtt.rx_mqtt_client_connected = False
 		print("rx_mqtt: Disconnected with result code " + str(rc))
 
 	# The callback for when a PUBLISH message is received from the server.
