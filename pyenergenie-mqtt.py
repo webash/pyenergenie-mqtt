@@ -44,11 +44,10 @@ rx_mqtt_client_connected = False
 def rx_mqtt_on_connect(client, userdata, flags, rc):
 	global mqtt_subscribe_topic
 	global rx_mqtt_client_connected
-
-	print("rx_mqtt: Connected with result code " + str(rc))
+	
+	print("rx_mqtt: Connected to %s:%s with result code %s" % (client._host, client._port, rc))
 	rx_mqtt_client_connected = True
-	print("rx_mqtt: Setting rx_mqtt_client_connected = True")
-	# TODO: Add the on_disconnect logic, and a loop to ensure we're always connected
+	print("rx_mqtt: Set rx_mqtt_client_connected as True = " + str(rx_mqtt_client_connected))
 
 	# Subscribing in on_connect() means that if we lose the connection and
 	# reconnect then subscriptions will be renewed.
@@ -59,6 +58,11 @@ def rx_mqtt_on_disconnect(client, userdata, flags, rc):
 	global rx_mqtt_client_connected
 	rx_mqtt_client_connected = False
 	print("rx_mqtt: Disconnected with result code " + str(rc))
+	print("rx_mqtt: Stopping mqtt subscribe client loop...")
+	client.loop_stop()
+
+def rx_mqtt_on_subscribe(client, userdata, mid, granted_qos):
+	print("rx_mqtt_on_subscribe: Subcribed for receiving mqtt - " + str(mid) + " with QoS="+str(granted_qos))
 
 # The callback for when a PUBLISH message is received from the server.
 def rx_mqtt_on_message(client, userdata, msg):
@@ -85,6 +89,7 @@ def rx_mqtt():
 			fromMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
 			fromMqtt.on_connect = rx_mqtt_on_connect
 			fromMqtt.on_disconnect = rx_mqtt_on_disconnect
+			fromMqtt.on_subscribe = rx_mqtt_on_subscribe
 			fromMqtt.on_message = rx_mqtt_on_message
 
 			if mqtt_username != "":
@@ -92,10 +97,6 @@ def rx_mqtt():
 			
 			print("rx_mqtt: Connecting after this...")
 			fromMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
-
-			while not rx_mqtt_client_connected:
-				print("rx_mqtt: Looping until connected")
-				time.sleep(0.1)
 
 			# Blocking call that processes network traffic, dispatches callbacks and
 			# handles reconnecting.
