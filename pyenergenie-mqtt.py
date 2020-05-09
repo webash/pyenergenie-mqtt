@@ -40,8 +40,6 @@ q_tx_mqtt = Queue.Queue()
 q_tx_energenie = Queue.Queue()
 
 rx_mqtt_client_connected = False
-wait_for_energenie_tx = False
-receive_paused_for_energenie_tx = False
 
 # The callback for when the client receives a CONNACK response from the server.
 def rx_mqtt_on_connect(client, userdata, flags, rc):
