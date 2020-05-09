@@ -81,7 +81,7 @@ def rx_mqtt():
 		try:
 			fromMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
 			fromMqtt.on_connect = rx_mqtt_on_connect
-			fromMqtt.on_disconnect = rx_mqtt_ondisconnect
+			fromMqtt.on_disconnect = rx_mqtt_on_disconnect
 			fromMqtt.on_message = rx_mqtt_on_message
 
 			if mqtt_username != "":
