@@ -336,10 +336,10 @@ def main():
 	thread_rxProcessor.start()
 
 	# Start thread for processing mqtt messages, and sending them on to the energenie device
-	print("Starting txToEnergenie thread...")
-	thread_txToEnergenie = threading.Thread(target=mqtt_tx_energenie)
-	thread_txToEnergenie.daemon = True
-	thread_txToEnergenie.start()
+	#print("Starting txToEnergenie thread...")
+	#thread_txToEnergenie = threading.Thread(target=mqtt_tx_energenie)
+	#thread_txToEnergenie.daemon = True
+	#thread_txToEnergenie.start()
 
 	print("These are devices in the registry...")
 	names = energenie.registry.names()
@@ -349,7 +349,34 @@ def main():
 
 	while True:
 		energenie.loop()
-		time.sleep(0.25)
+		try:
+			msg = q_rx_mqtt.get(block=False)
+		except Queue.Empty as e:
+			# Empty queue means do nothing, just keep trying to receive
+			pass
+		else:
+			try:
+				print("mqtt_tx_energenie: " + msg.topic + " " + str(msg.payload))
+
+				name = msg.topic.split("/", 2)[1]
+				device = energenie.registry.get(name)
+				if str(msg.payload) == "1":
+					print("mqtt_tx_energenie: " + name + " - on")
+					#for x in range(0, 5):
+					device.turn_on()
+					#	print("mqtt_tx_energenie: " + name + " - on attempt " + str(x))
+					#	time.sleep(0.1)
+				else:
+					print("mqtt_tx_energenie: " + name + " - off")
+					#for x in range(0, 5):
+					device.turn_off()
+					#	print("mqtt_tx_energenie: " + name + " - off attempt " + str(x))
+					#	time.sleep(0.1)
+			except Exception as e:
+				print("mqtt_tx_energenie: Exception occurred")
+				print(e)
+			finally:
+				q_rx_mqtt.task_done()
 
 
 if __name__ == "__main__":
