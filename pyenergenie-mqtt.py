@@ -38,6 +38,35 @@ q_rx_energenie = Queue.Queue()
 q_tx_mqtt = Queue.Queue()
 q_tx_energenie = Queue.Queue()
 
+rx_mqtt_client_connected = False
+
+# The callback for when the client receives a CONNACK response from the server.
+def rx_mqtt_on_connect(client, userdata, flags, rc):
+	global mqtt_subscribe_topic
+	global rx_mqtt_client_connected
+
+	print("rx_mqtt: Connected with result code " + str(rc))
+	rx_mqtt_client_connected = True
+	print("rx_mqtt: Setting rx_mqtt_client_connected = True")
+	# TODO: Add the on_disconnect logic, and a loop to ensure we're always connected
+
+	# Subscribing in on_connect() means that if we lose the connection and
+	# reconnect then subscriptions will be renewed.
+	print("rx_mqtt: Subscribing to " + mqtt_subscribe_topic + "/#")
+	client.subscribe(mqtt_subscribe_topic + "/#")
+
+def rx_mqtt_on_disconnect(client, userdata, flags, rc):
+	global rx_mqtt_client_connected
+	rx_mqtt_client_connected = False
+	print("rx_mqtt: Disconnected with result code " + str(rc))
+
+# The callback for when a PUBLISH message is received from the server.
+def rx_mqtt_on_message(client, userdata, msg):
+	global q_rx_mqtt
+	q_rx_mqtt.put(msg)
+
+
+
 def rx_mqtt():
 	global mqtt_hostname
 	global mqtt_port
@@ -48,33 +77,7 @@ def rx_mqtt():
 	global mqtt_clean_session
 	global mqtt_subscribe_topic
 	global q_rx_mqtt
-
-	rx_mqtt_client_connected = False
-
-	# The callback for when the client receives a CONNACK response from the server.
-	def rx_mqtt_on_connect(client, userdata, flags, rc):
-		global mqtt_subscribe_topic
-
-		print("rx_mqtt: Connected with result code " + str(rc))
-		rx_mqtt.rx_mqtt_client_connected = True
-		print("rx_mqtt: Setting rx_mqtt_client_connected = True")
-		# TODO: Add the on_disconnect logic, and a loop to ensure we're always connected
-
-		# Subscribing in on_connect() means that if we lose the connection and
-		# reconnect then subscriptions will be renewed.
-		print("rx_mqtt: Subscribing to " + mqtt_subscribe_topic + "/#")
-		client.subscribe(mqtt_subscribe_topic + "/#")
-	
-	def rx_mqtt_on_disconnect(client, userdata, flags, rc):
-		rx_mqtt.rx_mqtt_client_connected = False
-		print("rx_mqtt: Disconnected with result code " + str(rc))
-
-	# The callback for when a PUBLISH message is received from the server.
-	def rx_mqtt_on_message(client, userdata, msg):
-		global q_rx_mqtt
-		q_rx_mqtt.put(msg)
-
-
+	global rx_mqtt_client_connected
 
 	print("rx_mqtt: Starting mqtt subscribing loop...")
 	while True:
