@@ -124,16 +124,16 @@ def mqtt_tx_energenie():
 			device = energenie.registry.get(name)
 			if str(msg.payload) == "1":
 				print("mqtt_tx_energenie: " + name + " - on")
-				for x in range(0, 5):
-					device.turn_on()
-					print("mqtt_tx_energenie: " + name + " - on attempt " + str(x))
-					time.sleep(0.1)
+				#for x in range(0, 5):
+				device.turn_on()
+				#	print("mqtt_tx_energenie: " + name + " - on attempt " + str(x))
+				#	time.sleep(0.1)
 			else:
 				print("mqtt_tx_energenie: " + name + " - off")
-				for x in range(0, 5):
-					device.turn_off()
-					print("mqtt_tx_energenie: " + name + " - off attempt " + str(x))
-					time.sleep(0.1)
+				#for x in range(0, 5):
+				device.turn_off()
+				#	print("mqtt_tx_energenie: " + name + " - off attempt " + str(x))
+				#	time.sleep(0.1)
 		except Exception as e:
 			print("mqtt_tx_energenie: Exception occurred")
 			print(e)
