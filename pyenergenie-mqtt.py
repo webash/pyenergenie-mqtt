@@ -87,12 +87,18 @@ def rx_mqtt():
 			if mqtt_username != "":
 				fromMqtt.username_pw_set(mqtt_username, mqtt_password)
 			
+			print("rx_mqtt: Connecting after this...")
 			fromMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
+
+			while not rx_mqtt_client_connected:
+				print("rx_mqtt: Looping until connected")
+				time.sleep(0.1)
 
 			# Blocking call that processes network traffic, dispatches callbacks and
 			# handles reconnecting.
 			# Other loop*() functions are available that give a threaded interface and a
 			# manual interface.
+			print("rx_mqtt: Looping forever after this...")
 			fromMqtt.loop_forever()
 		except Exception as e:
 			print("rx_mqtt: exception occurred")
@@ -115,13 +121,13 @@ def mqtt_tx_energenie():
 				print("mqtt_tx_energenie: " + name + " - on")
 				for x in range(0, 5):
 					device.turn_on()
-					print("mqtt_tx_energenie: " + name + " - on attempt " + x)
+					print("mqtt_tx_energenie: " + name + " - on attempt " + str(x))
 					time.sleep(0.1)
 			else:
 				print("mqtt_tx_energenie: " + name + " - off")
 				for x in range(0, 5):
 					device.turn_off()
-					print("mqtt_tx_energenie: " + name + " - off attempt " + x)
+					print("mqtt_tx_energenie: " + name + " - off attempt " + str(x))
 					time.sleep(0.1)
 		except Exception as e:
 			print("mqtt_tx_energenie: Exception occurred")
