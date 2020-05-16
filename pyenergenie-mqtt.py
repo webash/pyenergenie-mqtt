@@ -136,7 +136,7 @@ def rx_mqtt():
 			# manual interface.
 			print("rx_mqtt: Looping forever after this...")
 			while not programkiller.kill_now:
-				fromMqtt.loop(timeout=0.05)
+				fromMqtt.loop(timeout=0.2)
 		except Exception as e:
 			print("rx_mqtt: exception occurred")
 			print(e)
@@ -288,7 +288,7 @@ def energenie_tx_mqtt():
 		while not programkiller.kill_now:
 			try:
 				#print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
-				item = q_tx_mqtt.get(block=False, timeout=0.05)
+				item = q_tx_mqtt.get(block=False, timeout=0.2)
 
 				#print("energenie_tx_mqtt: publishing item for " + item['DeviceName'] + " (" + str(item['DeviceType']) + ") found on queue...")
 				#print(str(item))
@@ -372,7 +372,7 @@ def main():
 	while not programkiller.kill_now:
 		energenie.loop()
 		try:
-			msg = q_rx_mqtt.get(block=False,timeout=0.05)
+			msg = q_rx_mqtt.get(block=False,timeout=0.2)
 		except Queue.Empty as e:
 			# Empty queue means do nothing, just keep trying to receive
 			pass
