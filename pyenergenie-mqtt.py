@@ -158,8 +158,8 @@ def mqtt_tx_energenie(msg):
 		device = energenie.registry.get(name)
 		
 		if len(topic_parts) == 2 or action == "switch" or action == "":
-			if str(msg.payload) == "1":
-				print("mqtt_tx_energenie: " + name + " - switch - 1/on")
+			if str(msg.payload) == "1" or (str(msg.payload)).lower() == "true" or (str(msg.payload)).lower() == "on":
+				print("mqtt_tx_energenie: " + name + " - switch - " + str(msg.payload) + "/on")
 				device.turn_on()
 			else:
 				print("mqtt_tx_energenie: " + name + " - switch - " + str(msg.payload) + "/off")
