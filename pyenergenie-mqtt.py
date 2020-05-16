@@ -63,25 +63,22 @@ class GracefulKiller:
 
 programkiller = GracefulKiller()
 
-def getPid():
-	return threading.current_thread().ident
-
 
 # The callback for when the client receives a CONNACK response from the server.
 def rx_mqtt_on_connect(client, userdata, flags, rc):
 	global mqtt_subscribe_topic
 	global rx_mqtt_client_connected
 
-	print("rx_mqtt [%s]: Connected to %s:%s with result code %s" % (getPid(), client._host, client._port, rc))
+	print("rx_mqtt: Connected to %s:%s with result code %s" % (client._host, client._port, rc))
 	rx_mqtt_client_connected = True
-	print("rx_mqtt [" + getPid() + "]: Set rx_mqtt_client_connected as True = " + str(rx_mqtt_client_connected))
+	print("rx_mqtt: Set rx_mqtt_client_connected as True = " + str(rx_mqtt_client_connected))
 
 	# Subscribing in on_connect() means that if we lose the connection and
 	# reconnect then subscriptions will be renewed.
-	print("rx_mqtt [" + getPid() + "]: Subscribing to " + mqtt_subscribe_topic + "/#")
+	print("rx_mqtt: Subscribing to " + mqtt_subscribe_topic + "/#")
 	client.subscribe(mqtt_subscribe_topic + "/#")
 
-	print("rx_mqtt [" + getPid() + "]: Publishing '" + mqtt_status_msg_connected + "' to '" + mqtt_status_topic_subscribe + "' and setting last will to '" + mqtt_status_msg_lastwill + "'")
+	print("rx_mqtt: Publishing '" + mqtt_status_msg_connected + "' to '" + mqtt_status_topic_subscribe + "' and setting last will to '" + mqtt_status_msg_lastwill + "'")
 	# Send a status message so that watchers know what's going on
 	client.publish(topic=mqtt_status_topic_subscribe, payload=mqtt_status_msg_connected, qos=1, retain=True)
 
@@ -91,12 +88,12 @@ def rx_mqtt_on_connect(client, userdata, flags, rc):
 def rx_mqtt_on_disconnect(client, userdata, flags, rc):
 	global rx_mqtt_client_connected
 	rx_mqtt_client_connected = False
-	print("rx_mqtt [" + getPid() + "]: Disconnected with result code " + str(rc))
-	print("rx_mqtt [" + getPid() + "]: Stopping mqtt subscribe client loop...")
+	print("rx_mqtt: Disconnected with result code " + str(rc))
+	print("rx_mqtt: Stopping mqtt subscribe client loop...")
 	client.loop_stop()
 
 def rx_mqtt_on_subscribe(client, userdata, mid, granted_qos):
-	print("rx_mqtt_on_subscribe [" + getPid() + "]: Subcribed for receiving mqtt - " + str(mid) + " with QoS="+str(granted_qos))
+	print("rx_mqtt_on_subscribe: Subcribed for receiving mqtt - " + str(mid) + " with QoS="+str(granted_qos))
 
 # The callback for when a PUBLISH message is received from the server.
 def rx_mqtt_on_message(client, userdata, msg):
@@ -119,7 +116,7 @@ def rx_mqtt():
 
 	fromMqtt = mqtt.Client(client_id=mqtt_subscribe_client_id, clean_session=mqtt_clean_session)
 
-	print("rx_mqtt [" + getPid() + "]: Starting mqtt subscribing loop...")
+	print("rx_mqtt: Starting mqtt subscribing loop...")
 	while not programkiller.kill_now:
 		try:
 			fromMqtt.on_connect = rx_mqtt_on_connect
@@ -130,31 +127,31 @@ def rx_mqtt():
 			if mqtt_username != "":
 				fromMqtt.username_pw_set(mqtt_username, mqtt_password)
 			
-			print("rx_mqtt [" + getPid() + "]: Connecting after this...")
+			print("rx_mqtt: Connecting after this...")
 			fromMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
 
 			# Blocking call that processes network traffic, dispatches callbacks and
 			# handles reconnecting.
 			# Other loop*() functions are available that give a threaded interface and a
 			# manual interface.
-			print("rx_mqtt [" + getPid() + "]: Looping forever after this...")
+			print("rx_mqtt: Looping forever after this...")
 			while not programkiller.kill_now:
 				fromMqtt.loop(timeout=0.2)
 		except Exception as e:
-			print("rx_mqtt [" + getPid() + "]: exception occurred")
+			print("rx_mqtt: exception occurred")
 			print(e)
 		finally:
 			if not programkiller.kill_now:
-				print("rx_mqtt [" + getPid() + "]: Restarting...")
+				print("rx_mqtt: Restarting...")
 	
-	print("rx_mqtt [" + getPid() + "]: Asked to terminate, sending '" + mqtt_status_msg_disconnected + "' to mqtt '" + mqtt_status_topic_subscribe + "' then disconnecting...")
+	print("rx_mqtt: Asked to terminate, sending '" + mqtt_status_msg_disconnected + "' to mqtt '" + mqtt_status_topic_subscribe + "' then disconnecting...")
 	fromMqtt.publish(topic=mqtt_status_topic_subscribe, payload=mqtt_status_msg_disconnected, qos=1, retain=True)
 	fromMqtt.disconnect()
 
 
 def mqtt_tx_energenie(msg):
 	try:
-		print("mqtt_tx_energenie [" + getPid() + "]: " + msg.topic + " " + str(msg.payload))
+		print("mqtt_tx_energenie: " + msg.topic + " " + str(msg.payload))
 
 		topic_parts = msg.topic.split("/", 3)
 		name = topic_parts[1]
@@ -163,30 +160,30 @@ def mqtt_tx_energenie(msg):
 		
 		if len(topic_parts) == 2 or action == "switch" or action == "":
 			if str(msg.payload) == "1" or (str(msg.payload)).lower() == "true" or (str(msg.payload)).lower() == "on":
-				print("mqtt_tx_energenie [" + getPid() + "]: " + name + " - switch - " + str(msg.payload) + "/on")
+				print("mqtt_tx_energenie: " + name + " - switch - " + str(msg.payload) + "/on")
 				device.turn_on()
 			else:
-				print("mqtt_tx_energenie [" + getPid() + "]: " + name + " - switch - " + str(msg.payload) + "/off")
+				print("mqtt_tx_energenie: " + name + " - switch - " + str(msg.payload) + "/off")
 				device.turn_off()
 		#elif action == "otheractionnamehere":
-		#	print("mqtt_tx_energenie [" + getPid() + "]: action '" + action + "' for '" + name + "' containing '" + msg.payload + "'" )
+		#	print("mqtt_tx_energenie: action '" + action + "' for '" + name + "' containing '" + msg.payload + "'" )
 		else:
 			# Action not found
-			print("mqtt_tx_energenie [" + getPid() + "]: action '" + action + "' unknown, nothing sent")
+			print("mqtt_tx_energenie: action '" + action + "' unknown, nothing sent")
 	except Exception as e:
-		print("mqtt_tx_energenie [" + getPid() + "]: Exception occurred")
+		print("mqtt_tx_energenie: Exception occurred")
 		print(e)
 
 
 def rx_energenie(address, message):
 	global q_rx_energenie
 
-	#print("rx_energenie [" + getPid() + "]: new message from " + str(address) )
+	#print("rx_energenie: new message from " + str(address) )
 
 	if address[0] == MFRID_ENERGENIE:
 		# Retrieve list of names from the registry, so we can refer to the name of the device
 		for devicename in energenie.registry.names():
-			#print("rx_energenie [" + getPid() + "]: checking if message from " + devicename)
+			#print("rx_energenie: checking if message from " + devicename)
 
 			# Using the name, retrieve the device
 			d = energenie.registry.get(devicename)
@@ -194,13 +191,13 @@ def rx_energenie(address, message):
 			# Check if the message is from the current device of this iteration
 			if address[2] == d.get_device_id():
 				# Yes we found the device, so add to processing queue
-				#print("rx_energenie [" + getPid() + "]: Queuing message from " + str(address) + " - " + devicename)
+				#print("rx_energenie: Queuing message from " + str(address) + " - " + devicename)
 				newQueueEntry = {'DeviceName': devicename, 'DeviceType': address[1]}
 				q_rx_energenie.put(newQueueEntry)
 				# The device was found, so break from the for loop
 				break
 	else:
-		print("rx_energenie [" + getPid() + "]: Not an energenie device " + str(address))
+		print("rx_energenie: Not an energenie device " + str(address))
 
 
 
@@ -209,7 +206,7 @@ def rx_energenie_process():
 
 	while True:
 		try:
-			#print("rx_energenie_process [" + getPid() + "]: awaiting item in q_rx_energenie...")
+			#print("rx_energenie_process: awaiting item in q_rx_energenie...")
 			refreshed_device = q_rx_energenie.get()
 			d = energenie.registry.get( refreshed_device['DeviceName'] )
 
@@ -222,7 +219,7 @@ def rx_energenie_process():
 
 			q_rx_energenie.task_done()
 		except Exception as e:
-			print("rx_energenie_process [" + getPid() + "]: exception occurred")
+			print("rx_energenie_process: exception occurred")
 			print(e)
 
 
@@ -243,33 +240,33 @@ def energenie_tx_mqtt():
 	def energenie_tx_mqtt_on_connect(client, userdata, flags, rc):
 		global energenie_tx_mqtt_client_connected
 		if rc == 0:
-			#print("energenie_tx_mqtt [" + getPid() + "]: client connected")
+			#print("energenie_tx_mqtt: client connected")
 			client.is_connected = True
 			energenie_tx_mqtt_client_connected = True
 
-			print("rx_mqtt [" + getPid() + "]: Publishing '" + mqtt_status_msg_connected + "' to '" + mqtt_status_topic + "' and setting last will to '" + mqtt_status_msg_lastwill + "'")
+			print("rx_mqtt: Publishing '" + mqtt_status_msg_connected + "' to '" + mqtt_status_topic + "' and setting last will to '" + mqtt_status_msg_lastwill + "'")
 			# Send a status message so that watchers know what's going on
 			client.publish(topic=mqtt_status_topic, payload=mqtt_status_msg_connected, qos=1, retain=True)
 
 			# Set last will message, so if connection is lost watchers will know
 			client.will_set(topic=mqtt_status_topic_subscribe, payload=mqtt_status_msg_lastwill, qos=1, retain=True)
 		else:
-			print("energenie_tx_mqtt [" + getPid() + "]: Bad connection; rc = "+str(rc))
+			print("energenie_tx_mqtt: Bad connection; rc = "+str(rc))
 	
 	def energenie_tx_mqtt_on_disconnect(client, userdata, rc):
 		global energenie_tx_mqtt_client_connected
-		#print("energenie_tx_mqtt [" + getPid() + "]: client disconnected " + str(rc))
+		#print("energenie_tx_mqtt: client disconnected " + str(rc))
 		client.is_connected = False
 		energenie_tx_mqtt_client_connected = False
 		#client.loop_stop()
 	
 	def energenie_tx_mqtt_on_publish(client, userdata, mid):
-		#print("energenie_tx_mqtt [" + getPid() + "]: publish of " + str(mid) + " successful")
+		#print("energenie_tx_mqtt: publish of " + str(mid) + " successful")
 		pass
 
 	#TODO: Move client instantiation outside of loop, manage connection status with single object
 	while True:
-		print("energenie_tx_mqtt [" + getPid() + "]: creating mqtt.client...")
+		print("energenie_tx_mqtt: creating mqtt.client...")
 		toMqtt = mqtt.Client(client_id=mqtt_client_id, clean_session=mqtt_clean_session)
 		toMqtt.is_connected = False
 		toMqtt.on_connect = energenie_tx_mqtt_on_connect
@@ -277,23 +274,23 @@ def energenie_tx_mqtt():
 		toMqtt.on_publish = energenie_tx_mqtt_on_publish
 
 		if mqtt_username <> "":
-			print("energenie_tx_mqtt [" + getPid() + "]: using username and password...")
+			print("energenie_tx_mqtt: using username and password...")
 			toMqtt.username_pw_set(mqtt_username, mqtt_password)
-		print("energenie_tx_mqtt [" + getPid() + "]: connecting to mqtt broker...")
+		print("energenie_tx_mqtt: connecting to mqtt broker...")
 		toMqtt.connect(mqtt_hostname, mqtt_port, mqtt_keepalive)
-		print("energenie_tx_mqtt [" + getPid() + "]: toMqtt.loop_start() thread starting...")
+		print("energenie_tx_mqtt: toMqtt.loop_start() thread starting...")
 		toMqtt.loop_start()
 
 		#while not toMqtt.is_connected:
-		#	print("energenie_tx_mqtt [" + getPid() + "]: waiting to ensure connection...")
+		#	print("energenie_tx_mqtt: waiting to ensure connection...")
 		#	time.sleep(0.5)
 		
 		while not programkiller.kill_now:
 			try:
-				#print("energenie_tx_mqtt [" + getPid() + "]: awaiting item in q_tx_mqtt...")
+				#print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
 				item = q_tx_mqtt.get(block=False, timeout=0.2)
 
-				#print("energenie_tx_mqtt [" + getPid() + "]: publishing item for " + item['DeviceName'] + " (" + str(item['DeviceType']) + ") found on queue...")
+				#print("energenie_tx_mqtt: publishing item for " + item['DeviceName'] + " (" + str(item['DeviceType']) + ") found on queue...")
 				#print(str(item))
 
 				data = item['data']
@@ -306,28 +303,28 @@ def energenie_tx_mqtt():
 						value = ""
 
 					publish_topic = mqtt_publish_topic + "/" + item['DeviceName'] + "/" + metric
-					#print("energenie_tx_mqtt [" + getPid() + "]: publishing '" + str( value ) + "' to topic " + publish_topic)
+					#print("energenie_tx_mqtt: publishing '" + str( value ) + "' to topic " + publish_topic)
 					publish_result = toMqtt.publish(publish_topic, value)
-					#print("energenie_tx_mqtt [" + getPid() + "]: publish returned " + str(publish_result[1]))
+					#print("energenie_tx_mqtt: publish returned " + str(publish_result[1]))
 				q_tx_mqtt.task_done()
 			except Queue.Empty as e:
 				# Empty queue means no payloads pending to be sent, so just loop again
 				pass
 			except Exception as e:
-				print("energenie_tx_mqtt [" + getPid() + "]: exception occurred")
+				print("energenie_tx_mqtt: exception occurred")
 				print(e)
 				if not toMqtt.is_connected:
-					print("energenie_tx_mqtt [" + getPid() + "]: mqtt client no longer connected, breaking processing loop")
+					print("energenie_tx_mqtt: mqtt client no longer connected, breaking processing loop")
 					break
 		
-		print("energenie_tx_mqtt [" + getPid() + "]: toMqtt.is_connected == " + str(toMqtt.is_connected))
-		print("energenie_tx_mqtt [" + getPid() + "]: toMqtt.loop_stop()")
+		print("energenie_tx_mqtt: toMqtt.is_connected == " + str(toMqtt.is_connected))
+		print("energenie_tx_mqtt: toMqtt.loop_stop()")
 		toMqtt.loop_stop()
 		if not programkiller.kill_now:
-			print("energenie_tx_mqtt [" + getPid() + "]: sleeping for 5 seconds before restarting thread")
+			print("energenie_tx_mqtt: sleeping for 5 seconds before restarting thread")
 			time.sleep(5)
 		else:
-			print("rx_mqtt [" + getPid() + "]: Asked to terminate, sending '" + mqtt_status_msg_disconnected + "' to mqtt '" + mqtt_status_topic + "' then disconnecting...")
+			print("rx_mqtt: Asked to terminate, sending '" + mqtt_status_msg_disconnected + "' to mqtt '" + mqtt_status_topic + "' then disconnecting...")
 			toMqtt.publish(topic=mqtt_status_topic, payload=mqtt_status_msg_disconnected, qos=1, retain=True)
 			toMqtt.disconnect()
 			break
