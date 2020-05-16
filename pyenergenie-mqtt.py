@@ -80,7 +80,7 @@ def rx_mqtt_on_connect(client, userdata, flags, rc):
 
 	print("rx_mqtt: Publishing '" + mqtt_status_msg_connected + "' to '" + mqtt_status_topic_subscribe + "' and setting last will to '" + mqtt_status_msg_lastwill + "'")
 	# Send a status message so that watchers know what's going on
-	fromMqtt.publish(topic=mqtt_status_topic_subscribe, payload=mqtt_status_msg_connected, qos=1, retain=True)
+	client.publish(topic=mqtt_status_topic_subscribe, payload=mqtt_status_msg_connected, qos=1, retain=True)
 
 	# Set last will message, so if connection is lost watchers will know
 	client.will_set(topic=mqtt_status_topic_subscribe, payload=mqtt_status_msg_lastwill, qos=1, retain=True)
@@ -114,10 +114,11 @@ def rx_mqtt():
 	global q_rx_mqtt
 	global rx_mqtt_client_connected
 
+	fromMqtt = mqtt.Client(client_id=mqtt_subscribe_client_id, clean_session=mqtt_clean_session)
+
 	print("rx_mqtt: Starting mqtt subscribing loop...")
 	while not programkiller.kill_now:
 		try:
-			fromMqtt = mqtt.Client(client_id=mqtt_subscribe_client_id, clean_session=mqtt_clean_session)
 			fromMqtt.on_connect = rx_mqtt_on_connect
 			fromMqtt.on_disconnect = rx_mqtt_on_disconnect
 			fromMqtt.on_subscribe = rx_mqtt_on_subscribe
@@ -245,7 +246,7 @@ def energenie_tx_mqtt():
 
 			print("rx_mqtt: Publishing '" + mqtt_status_msg_connected + "' to '" + mqtt_status_topic + "' and setting last will to '" + mqtt_status_msg_lastwill + "'")
 			# Send a status message so that watchers know what's going on
-			fromMqtt.publish(topic=mqtt_status_topic, payload=mqtt_status_msg_connected, qos=1, retain=True)
+			client.publish(topic=mqtt_status_topic, payload=mqtt_status_msg_connected, qos=1, retain=True)
 
 			# Set last will message, so if connection is lost watchers will know
 			client.will_set(topic=mqtt_status_topic_subscribe, payload=mqtt_status_msg_lastwill, qos=1, retain=True)
