@@ -349,21 +349,21 @@ def main():
 	thread_rxEnergenie = threading.Thread(target=rx_energenie_process)
 	thread_rxEnergenie.daemon = True
 	thread_rxEnergenie.start()
-	print("rx_energenie_process is in thread PID " + str(thread_rxEnergenie.get_native_id()))
+	print("rx_energenie_process is in thread PID " + str( thread_rxEnergenie.native_id ))
 	
 	# Start thread for processing received inbound energenie, then sending to mqtt
 	print("Starting energenie_tx_mqtt thread...")
 	thread_energenieTxMqtt = threading.Thread(target=energenie_tx_mqtt)
 	thread_energenieTxMqtt.daemon = True
 	thread_energenieTxMqtt.start()
-	print("energenie_tx_mqtt is in thread PID " + str(thread_energenieTxMqtt.get_native_id()))
+	print("energenie_tx_mqtt is in thread PID " + str( thread_energenieTxMqtt.native_id ))
 
 	# Start thread for receiving inbound mqtt messages, which will queue them for the other thread
 	print("Starting rxFromMqtt thread...")
 	thread_rxFromMqtt = threading.Thread(target=rx_mqtt)
 	thread_rxFromMqtt.daemon = True
 	thread_rxFromMqtt.start()
-	print("rx_mqtt is in thread PID " + str(thread_rxFromMqtt.get_native_id()))
+	print("rx_mqtt is in thread PID " + str( thread_rxFromMqtt.native_id ))
 
 	print("These are devices in the registry...")
 	names = energenie.registry.names()
