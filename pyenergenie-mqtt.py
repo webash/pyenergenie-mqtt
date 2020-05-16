@@ -372,7 +372,7 @@ def main():
 	while not programkiller.kill_now:
 		energenie.loop()
 		try:
-			msg = q_rx_mqtt.get(block=False)
+			msg = q_rx_mqtt.get(block=False,timeout=0.05)
 		except Queue.Empty as e:
 			# Empty queue means do nothing, just keep trying to receive
 			pass
