@@ -371,6 +371,7 @@ def main():
 	# Main processing loop for the energenie radio; loop command checks receive threads
 	while not programkiller.kill_now:
 		energenie.loop()
+		time.sleep(0.25)
 		# try:
 		# 	msg = q_rx_mqtt.get(block=False,timeout=1)
 		# except Queue.Empty as e:
