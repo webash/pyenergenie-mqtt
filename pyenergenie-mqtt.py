@@ -371,15 +371,15 @@ def main():
 	# Main processing loop for the energenie radio; loop command checks receive threads
 	while not programkiller.kill_now:
 		energenie.loop()
-		try:
-			msg = q_rx_mqtt.get(block=False,timeout=1)
-		except Queue.Empty as e:
-			# Empty queue means do nothing, just keep trying to receive
-			pass
-		else:
-			mqtt_tx_energenie(msg=msg)
+		# try:
+		# 	msg = q_rx_mqtt.get(block=False,timeout=1)
+		# except Queue.Empty as e:
+		# 	# Empty queue means do nothing, just keep trying to receive
+		# 	pass
+		# else:
+		# 	mqtt_tx_energenie(msg=msg)
 
-			q_rx_mqtt.task_done()
+		# 	q_rx_mqtt.task_done()
 
 
 if __name__ == "__main__":
