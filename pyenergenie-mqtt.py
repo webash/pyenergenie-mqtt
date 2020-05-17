@@ -43,6 +43,8 @@ PRODUCTID_MIHO005                = 0x02   #         Adaptor Plus
 PRODUCTID_MIHO006                = 0x05   #         House Monitor
 PRODUCTID_MIHO032                 = 0x0C  # FSK motion sensor
 PRODUCTID_MIHO033                 = 0x0D    # FSK open sensor
+ENERGENIE_SLEEP_WAIT = 2
+MQTT_SLEEP_WAIT = 0.2
 
 q_rx_mqtt = Queue.Queue()
 q_rx_energenie = Queue.Queue()
@@ -136,7 +138,7 @@ def rx_mqtt():
 			# manual interface.
 			print("rx_mqtt: Looping forever after this...")
 			while not programkiller.kill_now:
-				fromMqtt.loop(timeout=0.2)
+				fromMqtt.loop(timeout=MQTT_SLEEP_WAIT)
 		except Exception as e:
 			print("rx_mqtt: exception occurred")
 			print(e)
@@ -288,7 +290,7 @@ def energenie_tx_mqtt():
 		while not programkiller.kill_now:
 			try:
 				#print("energenie_tx_mqtt: awaiting item in q_tx_mqtt...")
-				item = q_tx_mqtt.get(block=False, timeout=0.2)
+				item = q_tx_mqtt.get(block=False, timeout=MQTT_SLEEP_WAIT)
 
 				#print("energenie_tx_mqtt: publishing item for " + item['DeviceName'] + " (" + str(item['DeviceType']) + ") found on queue...")
 				#print(str(item))
@@ -371,16 +373,17 @@ def main():
 	# Main processing loop for the energenie radio; loop command checks receive threads
 	while not programkiller.kill_now:
 		energenie.loop()
-		time.sleep(0.25)
-		# try:
-		# 	msg = q_rx_mqtt.get(block=False,timeout=1)
-		# except Queue.Empty as e:
-		# 	# Empty queue means do nothing, just keep trying to receive
-		# 	pass
-		# else:
-		# 	mqtt_tx_energenie(msg=msg)
+		try:
+			msg = q_rx_mqtt.get(block=False)
+		except Queue.Empty as e:
+			# Empty queue means do nothing, just keep trying to receive
+			pass
+		else:
+			mqtt_tx_energenie(msg=msg)
 
-		# 	q_rx_mqtt.task_done()
+			q_rx_mqtt.task_done()
+
+		time.sleep(ENERGENIE_SLEEP_WAIT)
 
 
 if __name__ == "__main__":
