@@ -53,6 +53,8 @@ q_tx_energenie = Queue.Queue()
 
 rx_mqtt_client_connected = False
 
+energenie_devices = {}
+
 # Helping with graceful quit https://stackoverflow.com/a/31464349/443588
 class GracefulKiller:
 	kill_now = False
@@ -179,25 +181,26 @@ def mqtt_tx_energenie(msg):
 
 def rx_energenie(address, message):
 	global q_rx_energenie
+	global energenie_devices
 
 	#print("rx_energenie: new message from " + str(address) )
 
 	if address[0] == MFRID_ENERGENIE:
-		# Retrieve list of names from the registry, so we can refer to the name of the device
-		for devicename in energenie.registry.names():
+		if address[2] in energenie_devices:
+			devicename = energenie_devices[address[2]].name
+			d = energenie_devices[address[2]].device
 			#print("rx_energenie: checking if message from " + devicename)
-
-			# Using the name, retrieve the device
-			d = energenie.registry.get(devicename)
 
 			# Check if the message is from the current device of this iteration
 			if address[2] == d.get_device_id():
 				# Yes we found the device, so add to processing queue
 				#print("rx_energenie: Queuing message from " + str(address) + " - " + devicename)
-				newQueueEntry = {'DeviceName': devicename, 'DeviceType': address[1]}
+				newQueueEntry = {'DeviceId': address[2], 'DeviceName': devicename, 'DeviceType': address[1]}
 				q_rx_energenie.put(newQueueEntry)
 				# The device was found, so break from the for loop
 				break
+		else:
+			print("rx_energenie: Unknown device ID '" + address[2] + "' of type '" + address[1] + "' - maybe a neighbour or a device not yet added")
 	else:
 		print("rx_energenie: Not an energenie device " + str(address))
 
@@ -205,14 +208,20 @@ def rx_energenie(address, message):
 
 def rx_energenie_process():
 	global q_rx_energenie
+	global energenie_devices
 
 	while True:
 		try:
 			#print("rx_energenie_process: awaiting item in q_rx_energenie...")
 			refreshed_device = q_rx_energenie.get()
-			d = energenie.registry.get( refreshed_device['DeviceName'] )
+			d = energenie_devices[ refreshed_device['DeviceId'] ].device
 
-			item = {'DeviceName': refreshed_device['DeviceName'], 'DeviceType': refreshed_device['DeviceType'], 'data': {}}
+			item = {
+				'DeviceId': refreshed_device['DeviceId'],
+				'DeviceName': refreshed_device['DeviceName'],
+				'DeviceType': refreshed_device['DeviceType'],
+				'data': {}
+				}
 			for metric_name in dir(d.readings):
 				if not metric_name.startswith("__"):
 					value = getattr(d.readings, metric_name)
@@ -341,6 +350,7 @@ def main():
 	global mqtt_password
 	global mqtt_client_id
 	global mqtt_clean_session
+	global energenie_devices
 	
 	# Bind event receiver for inbound energenie messages
 	print("Binding fsk_router.when_incoming to rx_energenie...")
@@ -364,12 +374,18 @@ def main():
 	thread_rxFromMqtt.daemon = True
 	thread_rxFromMqtt.start()
 
-	print("These are devices in the registry...")
+	print("Iterating devices in registry so they bind to receive router, and adding to energenie_devices dict for future easy reference...")
 	names = energenie.registry.names()
 	for name in names:
-		print(name)
+		print( "...Binding device " + name + "...")
 		device = energenie.registry.get(name)
+		# Used by rx_energenie to have a handy device name and device object, since the registry does this oddly
+		energenie_devices[device.get_device_id()] = {
+			"name": name,
+			"device": device
+		}
 
+	print("Starting main receiver loop...")
 	# Main processing loop for the energenie radio; loop command checks receive threads
 	while not programkiller.kill_now:
 		energenie.loop()
