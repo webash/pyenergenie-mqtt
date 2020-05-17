@@ -197,8 +197,6 @@ def rx_energenie(address, message):
 				#print("rx_energenie: Queuing message from " + str(address) + " - " + devicename)
 				newQueueEntry = {'DeviceId': address[2], 'DeviceName': devicename, 'DeviceType': address[1]}
 				q_rx_energenie.put(newQueueEntry)
-				# The device was found, so break from the for loop
-				break
 		else:
 			print("rx_energenie: Unknown device ID '" + address[2] + "' of type '" + address[1] + "' - maybe a neighbour or a device not yet added")
 	else:
