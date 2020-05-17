@@ -187,8 +187,8 @@ def rx_energenie(address, message):
 
 	if address[0] == MFRID_ENERGENIE:
 		if address[2] in energenie_devices:
-			devicename = energenie_devices[address[2]].name
-			d = energenie_devices[address[2]].device
+			devicename = energenie_devices[address[2]]['name']
+			d = energenie_devices[address[2]]['device']
 			#print("rx_energenie: checking if message from " + devicename)
 
 			# Check if the message is from the current device of this iteration
@@ -212,7 +212,7 @@ def rx_energenie_process():
 		try:
 			#print("rx_energenie_process: awaiting item in q_rx_energenie...")
 			refreshed_device = q_rx_energenie.get()
-			d = energenie_devices[ refreshed_device['DeviceId'] ].device
+			d = energenie_devices[ refreshed_device['DeviceId'] ]['device']
 
 			item = {
 				'DeviceId': refreshed_device['DeviceId'],
@@ -379,8 +379,8 @@ def main():
 		device = energenie.registry.get(name)
 		# Used by rx_energenie to have a handy device name and device object, since the registry does this oddly
 		energenie_devices[device.get_device_id()] = {
-			"name": name,
-			"device": device
+			'name': name,
+			'device': device
 		}
 
 	print("Starting main receiver loop...")
