@@ -344,7 +344,7 @@ def main():
 	
 	# Bind event receiver for inbound energenie messages
 	print("Binding fsk_router.when_incoming to rx_energenie...")
-	energenie.fsk_router.when_incoming(rx_energenie)
+	#energenie.fsk_router.when_incoming(rx_energenie)
 
 	# Start thread for processing received inbound energenie, then sending to mqtt
 	print("Starting rx_energenie_process thread...")
