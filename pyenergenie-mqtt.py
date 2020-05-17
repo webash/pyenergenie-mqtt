@@ -349,17 +349,6 @@ def main():
 	global mqtt_client_id
 	global mqtt_clean_session
 	global energenie_devices
-
-	print("Iterating devices in registry so they bind to receive router, and adding to energenie_devices dict for future easy reference...")
-	names = energenie.registry.names()
-	for name in names:
-		print( "...Binding device " + name + "...")
-		device = energenie.registry.get(name)
-		# Used by rx_energenie to have a handy device name and device object, since the registry does this oddly
-		energenie_devices[device.get_device_id()] = {
-			"name": name,
-			"device": device
-		}
 	
 	# Bind event receiver for inbound energenie messages
 	print("Binding fsk_router.when_incoming to rx_energenie...")
@@ -382,6 +371,17 @@ def main():
 	thread_rxFromMqtt = threading.Thread(target=rx_mqtt, name="rx_mqtt")
 	thread_rxFromMqtt.daemon = True
 	thread_rxFromMqtt.start()
+
+	print("Iterating devices in registry so they bind to receive router, and adding to energenie_devices dict for future easy reference...")
+	names = energenie.registry.names()
+	for name in names:
+		print( "...Binding device " + name + "...")
+		device = energenie.registry.get(name)
+		# Used by rx_energenie to have a handy device name and device object, since the registry does this oddly
+		energenie_devices[device.get_device_id()] = {
+			"name": name,
+			"device": device
+		}
 
 	print("Starting main receiver loop...")
 	# Main processing loop for the energenie radio; loop command checks receive threads
