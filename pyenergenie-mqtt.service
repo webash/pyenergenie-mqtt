@@ -12,7 +12,7 @@ After=autossh-agn.target
 [Service]
 Type=simple
 WorkingDirectory=/shared/pyenergenie-mqtt/
-ExecStart=/usr/bin/python /shared/pyenergenie-mqtt/pyenergenie-mqtt.py
+ExecStart=/usr/bin/python -u /shared/pyenergenie-mqtt/pyenergenie-mqtt.py
 Restart=always
 
 [Install] 
