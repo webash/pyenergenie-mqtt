@@ -378,10 +378,14 @@ def main():
 		print( "...Binding device " + name + "...")
 		device = energenie.registry.get(name)
 		# Used by rx_energenie to have a handy device name and device object, since the registry does this oddly
-		energenie_devices[device.get_device_id()] = {
-			'name': name,
-			'device': device
-		}
+
+		device_id = device.get_device_id()
+		if type(device_id) != tuple and type(device_id) != list:
+			energenie_devices[device_id] = {
+				'name': name,
+				'device': device
+			}
+
 
 	print("Starting main receiver loop...")
 	# Main processing loop for the energenie radio; loop command checks receive threads
